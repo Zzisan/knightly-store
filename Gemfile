@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-
+gem 'activeadmin'
 gem 'devise'
 
 
