@@ -1,2 +1,15 @@
-<h1>Products#index</h1>
-<p>Find me in app/views/products/index.html.erb</p>
+<h1>Welcome to Knightly</h1>
+<p>Your curated medieval armory awaits!</p>
+
+<%= link_to "Browse Products", products_path %>
+
+<h2>Featured Products</h2>
+<% @products = Product.limit(5) %>
+<% @products.each do |product| %>
+  <div style="border: 1px solid #ccc; margin: 1rem; padding: 1rem;">
+    <h3><%= product.name %></h3>
+    <p><%= truncate(product.description, length: 80) %></p>
+    <p><strong>Price:</strong> $<%= product.price %></p>
+    <%= link_to "View Details", product_path(product) %>
+  </div>
+<% end %>
