@@ -1,0 +1,20 @@
+<h1>Checkout</h1>
+
+<p>Total Amount: 
+  <% total = 0 %>
+  <% (session[:cart] || {}).each do |product_id, quantity| %>
+    <% product = Product.find_by(id: product_id) %>
+    <% total += product.price * quantity if product %>
+  <% end %>
+  <%= number_to_currency(total) %>
+</p>
+
+<%= form_with model: @order, url: checkout_path, local: true do |f| %>
+  <div>
+    <%= f.label :shipping_address, "Shipping Address" %>
+    <%= f.text_field :shipping_address, value: current_customer.address %>
+  </div>
+  <div>
+    <%= f.submit "Place Order" %>
+  </div>
+<% end %>
