@@ -8,6 +8,13 @@ Rails.application.routes.draw do
   
   resources :products, only: [:index, :show]
   
+  # Cart routes using a singular resource
+  resource :cart, only: [:show], controller: 'cart' do
+    post 'add/:product_id', action: :add, as: :add_to
+    patch 'update/:product_id', action: :update, as: :update_item
+    delete 'remove/:product_id', action: :remove, as: :remove_item
+  end
+
   # Existing routes:
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
