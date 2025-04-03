@@ -1,2 +1,9 @@
-<h1>Home#index</h1>
-<p>Find me in app/views/home/index.html.erb</p>
+<h1>Featured Products</h1>
+
+<% @products.each do |product| %>
+  <div style="border: 1px solid #ccc; margin: 1rem; padding: 1rem;">
+    <h2><%= product.name %></h2>
+    <p><%= product.description %></p>
+    <p><strong>Price:</strong> <%= product.price %></p>
+  </div>
+<% end %>
