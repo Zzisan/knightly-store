@@ -1,6 +1,15 @@
 class ProductsController < ApplicationController
   def index
-    @products = Product.all.order(:id)  # Optionally order products by id or any attribute.
+    @products = Product.all
+    # Filter by keyword in product name or description (case-insensitive)
+    if params[:keyword].present?
+      @products = @products.where("name ILIKE ? OR description ILIKE ?", "%#{params[:keyword]}%", "%#{params[:keyword]}%")
+    end
+    # Filter by category if a category_id is provided
+    if params[:category_id].present?
+      @products = @products.where(category_id: params[:category_id])
+    end
+    @products = @products.order(:id)
   end
 
   def show

@@ -1,15 +1,27 @@
-<h1>Welcome to Knightly</h1>
-<p>Your curated medieval armory awaits!</p>
+<h1>Products</h1>
 
-<%= link_to "Browse Products", products_path %>
-
-<h2>Featured Products</h2>
-<% @products = Product.limit(5) %>
-<% @products.each do |product| %>
-  <div style="border: 1px solid #ccc; margin: 1rem; padding: 1rem;">
-    <h3><%= product.name %></h3>
-    <p><%= truncate(product.description, length: 80) %></p>
-    <p><strong>Price:</strong> $<%= product.price %></p>
-    <%= link_to "View Details", product_path(product) %>
+<%= form_with url: products_path, method: :get, local: true do |f| %>
+  <div>
+    <%= f.label :keyword, "Search" %>
+    <%= f.text_field :keyword, value: params[:keyword] %>
   </div>
+  <div>
+    <%= f.label :category_id, "Category" %>
+    <%= f.select :category_id, options_from_collection_for_select(Category.all, :id, :name, params[:category_id]), include_blank: "All Categories" %>
+  </div>
+  <div>
+    <%= f.submit "Search" %>
+  </div>
+<% end %>
+
+<% if @products.any? %>
+  <% @products.each do |product| %>
+    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+      <h2><%= link_to product.name, product_path(product) %></h2>
+      <p><%= truncate(product.description, length: 100) %></p>
+      <p><strong>Price:</strong> <%= number_to_currency(product.price) %></p>
+    </div>
+  <% end %>
+<% else %>
+  <p>No products found.</p>
 <% end %>
