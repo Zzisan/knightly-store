@@ -4,6 +4,7 @@ gem 'activeadmin'
 gem 'devise'
 gem 'sassc-rails'
 gem 'stripe'
+gem 'bootstrap', '~> 5.1.3'
 
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"

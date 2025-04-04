@@ -1,13 +1,64 @@
-<!-- Example navigation snippet in app/views/layouts/application.html.erb -->
-<nav>
-  <%= link_to "Home", root_path %> |
-  <%= link_to "Products", products_path %> |
-  <% if customer_signed_in? %>
-    <%= link_to "Order History", orders_path %> |
-    <%= link_to "Logout", destroy_customer_session_path, method: :delete %>
-  <% else %>
-    <%= link_to "Login", new_customer_session_path %> |
-    <%= link_to "Sign Up", new_customer_registration_path %>
-  <% end %>
-  <%= link_to "Cart", cart_path %>
-</nav>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Knightly</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", media: "all", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload" %>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <%= link_to "Knightly", root_path, class: "navbar-brand" %>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <%= link_to "Home", root_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= link_to "Products", products_path, class: "nav-link" %>
+            </li>
+            <% if customer_signed_in? %>
+              <li class="nav-item">
+                <%= link_to "Order History", orders_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Logout", destroy_customer_session_path, method: :delete, class: "nav-link" %>
+              </li>
+            <% else %>
+              <li class="nav-item">
+                <%= link_to "Login", new_customer_session_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Sign Up", new_customer_registration_path, class: "nav-link" %>
+              </li>
+            <% end %>
+            <li class="nav-item">
+              <%= link_to "Cart", cart_path, class: "nav-link" %>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <% if notice %>
+        <div class="alert alert-success"><%= notice %></div>
+      <% end %>
+      <% if alert %>
+        <div class="alert alert-danger"><%= alert %></div>
+      <% end %>
+
+      <%= yield %>
+    </div>
+
+    <!-- Include Bootstrap JS (if not already included via importmap or another method) -->
+    <%= javascript_include_tag "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js", integrity: "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p", crossorigin: "anonymous" %>
+  </body>
+</html>
