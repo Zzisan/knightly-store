@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= content_for(:title) || "Knightly" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-
-    <%= yield :head %>
-
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  </head>
-
-  <body>
-    <%= yield %>
-  </body>
-</html>
+<!-- Example navigation snippet in app/views/layouts/application.html.erb -->
+<nav>
+  <%= link_to "Home", root_path %> |
+  <%= link_to "Products", products_path %> |
+  <% if customer_signed_in? %>
+    <%= link_to "Order History", orders_path %> |
+    <%= link_to "Logout", destroy_customer_session_path, method: :delete %>
+  <% else %>
+    <%= link_to "Login", new_customer_session_path %> |
+    <%= link_to "Sign Up", new_customer_registration_path %>
+  <% end %>
+  <%= link_to "Cart", cart_path %>
+</nav>

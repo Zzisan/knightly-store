@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  get "orders/show"
   get "home/index"
   root 'home#index'
   
@@ -19,8 +18,8 @@ Rails.application.routes.draw do
   # Checkout routes
   resource :checkout, only: [:new, :create]
   
-  # Orders resource for order confirmation page
-  resources :orders, only: [:show]
+  # Add index to orders so customers can see their past orders
+  resources :orders, only: [:index, :show]
   
   # Existing routes:
   get "up" => "rails/health#show", as: :rails_health_check

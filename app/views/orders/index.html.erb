@@ -1,0 +1,17 @@
+<h1>Your Order History</h1>
+
+<% if @orders.any? %>
+  <% @orders.each do |order| %>
+    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+      <p><strong>Order ID:</strong> <%= order.id %></p>
+      <p><strong>Date:</strong> <%= order.order_date.strftime("%B %d, %Y %I:%M %p") %></p>
+      <p><strong>Total:</strong> <%= number_to_currency(order.total_amount) %></p>
+      <p><strong>Status:</strong> <%= order.status %></p>
+      <%= link_to "View Details", order_path(order) %>
+    </div>
+  <% end %>
+<% else %>
+  <p>You haven't placed any orders yet.</p>
+<% end %>
+
+<%= link_to "Continue Shopping", products_path %>
