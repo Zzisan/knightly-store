@@ -5,6 +5,7 @@ gem 'devise'
 gem 'sassc-rails'
 gem 'stripe'
 gem 'bootstrap', '~> 5.1.3'
+gem 'kaminari'
 
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
