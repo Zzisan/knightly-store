@@ -6,7 +6,11 @@ gem 'sassc-rails'
 gem 'stripe'
 gem 'bootstrap', '~> 5.1.3'
 gem 'kaminari'
+gem 'importmap-rails'
+gem 'faker'
+gem 'httparty'
 
+gem 'dotenv-rails', groups: [:development, :test]
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.2.2", ">= 7.2.2.1"
@@ -65,4 +69,7 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+end
+group :development, :test do
+  gem 'rspec-rails', '~> 5.0.0'
 end

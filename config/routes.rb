@@ -8,18 +8,18 @@ Rails.application.routes.draw do
   
   resources :products, only: [:index, :show]
   
-  # Cart routes
   resource :cart, only: [:show], controller: 'cart' do
     post 'add/:product_id', action: :add, as: :add_to
     patch 'update/:product_id', action: :update, as: :update_item
     delete 'remove/:product_id', action: :remove, as: :remove_item
   end
   
-  # Checkout routes
   resource :checkout, only: [:new, :create]
-  
-  # Add index to orders so customers can see their past orders
   resources :orders, only: [:index, :show]
+  
+  # Static pages routes:
+  get 'about', to: 'pages#show', defaults: { slug: 'about' }, as: :about
+  get 'contact', to: 'pages#show', defaults: { slug: 'contact' }, as: :contact
   
   # Existing routes:
   get "up" => "rails/health#show", as: :rails_health_check

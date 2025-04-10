@@ -1,30 +1,51 @@
 <h1>Products</h1>
 
 <%= form_with url: products_path, method: :get, local: true do |f| %>
-  <div>
-    <%= f.label :keyword, "Search" %>
-    <%= f.text_field :keyword, value: params[:keyword] %>
+  <div class="mb-3">
+    <%= f.label :keyword, "Search", class: "form-label" %>
+    <%= f.text_field :keyword, value: params[:keyword], class: "form-control" %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :category_id, "Category", class: "form-label" %>
+    <%= f.select :category_id, options_from_collection_for_select(Category.all, :id, :name, params[:category_id]), { include_blank: "All Categories" }, { class: "form-select" } %>
   </div>
   <div>
-    <%= f.label :category_id, "Category" %>
-    <%= f.select :category_id, options_from_collection_for_select(Category.all, :id, :name, params[:category_id]), include_blank: "All Categories" %>
-  </div>
-  <div>
-    <%= f.submit "Search" %>
+    <%= f.submit "Search", class: "btn btn-primary" %>
   </div>
 <% end %>
 
-<% if @products.any? %>
-  <% @products.each do |product| %>
-    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
-      <h2><%= link_to product.name, product_path(product) %></h2>
-      <p><%= truncate(product.description, length: 100) %></p>
-      <p><strong>Price:</strong> <%= number_to_currency(product.price) %></p>
-    </div>
+<%# If no filters are applied, group products by category %>
+<% if params[:keyword].blank? && params[:category_id].blank? %>
+  <% grouped_products = @products.to_a.group_by(&:category) %>
+  <% if grouped_products.any? %>
+    <% grouped_products.each do |category, products| %>
+      <h2 class="mt-4"><%= category.name %></h2>
+      <% products.each do |product| %>
+        <div class="product border p-3 my-2">
+          <h3><%= link_to product.name, product_path(product) %></h3>
+          <p><%= truncate(product.description, length: 100) %></p>
+          <p><strong>Price:</strong> <%= number_to_currency(product.price) %></p>
+        </div>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p>No products found.</p>
   <% end %>
-  
-  <!-- Kaminari pagination links -->
-  <%= paginate @products %>
 <% else %>
-  <p>No products found.</p>
+  <%# If filters are applied, show all filtered products in a single list %>
+  <% if @products.any? %>
+    <% @products.each do |product| %>
+      <div class="product border p-3 my-2">
+        <h3><%= link_to product.name, product_path(product) %></h3>
+        <p><%= truncate(product.description, length: 100) %></p>
+        <p><strong>Price:</strong> <%= number_to_currency(product.price) %></p>
+        <p><strong>Category:</strong> <%= product.category.name %></p>
+      </div>
+    <% end %>
+    <div class="pagination">
+      <%= paginate @products %>
+    </div>
+  <% else %>
+    <p>No products found.</p>
+  <% end %>
 <% end %>

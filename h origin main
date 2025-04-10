@@ -1,0 +1,14 @@
+[33m08c4819[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m Add ActiveAdmin resource for orders to manage order details and statuses.
+[33m73b289c[m Add pagination to products index using Kaminari.
+[33m7d46fb2[m Integrate Bootstrap for responsive design and update application layout with a navigation bar.
+[33m57987bf[m Integrate Active Storage for product images; update Product model, admin form, and product views.
+[33me84f17a[m Integrate Stripe payment processing in checkout process.
+[33m924f181[m Implement order history: added orders index action and view for customers.
+[33mfb4d844[m Implement product search functionality in products index view and controller.
+[33me615f74[m Implement checkout process: added CheckoutController, views for checkout and order confirmation, and updated routes.
+[33m9ddee7c[m Implement session-based shopping cart: add, update, remove items; add cart view and routes.
+[33m95324cd[m updated console code.
+[33m6134c69[m Add products controller and views for index and show; update home page with product links.
+[33m5c56941[m Customize ActiveAdmin resources for Category and Product.
+[33me97c95d[m Customize ActiveAdmin resources for Category and Product.
+[33m448dc6b[m Initial commit: Created Rails project with SQLite, set up Devise for Customer, and generated core models (Category, Product, Order, OrderItem) with migrations and associations.
