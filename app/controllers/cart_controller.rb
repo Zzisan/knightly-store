@@ -5,15 +5,49 @@ class CartController < ApplicationController
     @cart_items = session[:cart] || {}
     # Fetch the corresponding products from the database
     @products = Product.where(id: @cart_items.keys)
+    
+    respond_to do |format|
+      format.html
+      format.json { 
+        render json: { 
+          cart: @cart_items,
+          cart_count: @cart_items.values.sum,
+          success: true
+        } 
+      }
+    end
   end
 
   # Add a product to the cart
   def add
     product_id = params[:product_id].to_s
+    quantity = params[:quantity].present? ? params[:quantity].to_i : 1
+    
     session[:cart] ||= {}
     session[:cart][product_id] ||= 0
-    session[:cart][product_id] += 1
-    redirect_to cart_path, notice: "Product added to cart!"
+    session[:cart][product_id] += quantity
+    
+    @product = Product.find_by(id: product_id)
+    
+    respond_to do |format|
+      format.html { 
+        redirect_back(fallback_location: products_path, notice: "#{@product.name} added to cart!") 
+      }
+      format.js
+      format.json { 
+        render json: { 
+          success: true, 
+          message: "#{@product.name} added to cart!",
+          cart_count: session[:cart].values.sum,
+          product: {
+            id: @product.id,
+            name: @product.name,
+            price: @product.on_sale? ? @product.sale_price : @product.price,
+            image_url: @product.image.attached? ? url_for(@product.image) : nil
+          }
+        } 
+      }
+    end
   end
 
   # Update the quantity of a product in the cart

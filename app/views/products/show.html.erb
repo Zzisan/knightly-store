@@ -1,13 +1,88 @@
-<h1><%= @product.name %></h1>
+<div class="row">
+  <div class="col-md-6">
+    <% if @product.image.attached? %>
+      <div class="mb-3">
+        <%= image_tag url_for(@product.image), class: "img-fluid rounded", alt: @product.name %>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="col-md-6">
+    <h1><%= @product.name %></h1>
+    
+    <% if @product.on_sale? %>
+      <div class="badge bg-danger mb-2">ON SALE</div>
+    <% end %>
+    
+    <div class="mb-3">
+      <% if @product.on_sale? %>
+        <div class="d-flex align-items-center">
+          <h3 class="text-danger me-2"><%= number_to_currency(@product.sale_price) %></h3>
+          <span class="text-muted text-decoration-line-through"><%= number_to_currency(@product.price) %></span>
+          <span class="badge bg-danger ms-2"><%= @product.discount_percentage %>% OFF</span>
+        </div>
+      <% else %>
+        <h3><%= number_to_currency(@product.price) %></h3>
+      <% end %>
+    </div>
+    
+    <div class="mb-3">
+      <p><strong>Category:</strong> <%= @product.category.name %></p>
+      <p><strong>Available Stock:</strong> <%= @product.stock_quantity %></p>
+    </div>
+    
+    <div class="mb-4">
+      <h4>Description</h4>
+      <p><%= @product.description %></p>
+    </div>
+    
+    <div class="mb-3">
+      <div class="d-flex align-items-center">
+        <div class="input-group me-2" style="max-width: 150px;">
+          <span class="input-group-text">Qty</span>
+          <input type="number" class="form-control" value="1" min="1" max="<%= @product.stock_quantity %>" data-product-id="<%= @product.id %>">
+        </div>
+        <button class="btn btn-primary add-to-cart-btn" data-product-id="<%= @product.id %>">
+          <i class="bi bi-cart-plus"></i> Add to Cart
+        </button>
+      </div>
+    </div>
+    
+    <div class="d-grid gap-2">
+      <%= link_to "Back to Products", products_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+</div>
 
-<% if @product.image.attached? %>
-  <%= image_tag url_for(@product.image), style: "max-width: 300px;" %>
-<% else %>
-  <p>No image available.</p>
+<% if @related_products.any? %>
+  <div class="mt-5">
+    <h3>Related Products</h3>
+    <div class="row">
+      <% @related_products.each do |product| %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <% if product.image.attached? %>
+              <%= image_tag url_for(product.image), class: "card-img-top", alt: product.name %>
+            <% end %>
+            <div class="card-body">
+              <h5 class="card-title"><%= link_to product.name, product_path(product) %></h5>
+              
+              <% if product.on_sale? %>
+                <div class="d-flex align-items-center">
+                  <span class="text-danger me-2"><%= number_to_currency(product.sale_price) %></span>
+                  <span class="text-muted text-decoration-line-through"><%= number_to_currency(product.price) %></span>
+                </div>
+              <% else %>
+                <p><%= number_to_currency(product.price) %></p>
+              <% end %>
+              
+              <button class="btn btn-sm btn-primary mt-2 add-to-cart-btn" data-product-id="<%= product.id %>">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
 <% end %>
-
-<p><%= @product.description %></p>
-<p><strong>Price:</strong> $<%= @product.price %></p>
-<p><strong>Stock:</strong> <%= @product.stock_quantity %> available</p>
-
-<%= link_to "Back to Products", products_path %>

@@ -1,5 +1,6 @@
 <h1>Products</h1>
 
+<!-- Search Form (optional) -->
 <%= form_with url: products_path, method: :get, local: true do |f| %>
   <div class="mb-3">
     <%= f.label :keyword, "Search", class: "form-label" %>
@@ -7,45 +8,93 @@
   </div>
   <div class="mb-3">
     <%= f.label :category_id, "Category", class: "form-label" %>
-    <%= f.select :category_id, options_from_collection_for_select(Category.all, :id, :name, params[:category_id]), { include_blank: "All Categories" }, { class: "form-select" } %>
+    <%= f.select :category_id,
+          options_from_collection_for_select(Category.all, :id, :name, params[:category_id]),
+          { include_blank: "All Categories" },
+          { class: "form-select" } %>
   </div>
   <div>
     <%= f.submit "Search", class: "btn btn-primary" %>
   </div>
 <% end %>
 
-<%# If no filters are applied, group products by category %>
-<% if params[:keyword].blank? && params[:category_id].blank? %>
-  <% grouped_products = @products.to_a.group_by(&:category) %>
-  <% if grouped_products.any? %>
-    <% grouped_products.each do |category, products| %>
-      <h2 class="mt-4"><%= category.name %></h2>
-      <% products.each do |product| %>
-        <div class="product border p-3 my-2">
-          <h3><%= link_to product.name, product_path(product) %></h3>
-          <p><%= truncate(product.description, length: 100) %></p>
-          <p><strong>Price:</strong> <%= number_to_currency(product.price) %></p>
-        </div>
-      <% end %>
+<!-- Filter Navigation Buttons -->
+<nav class="mt-3 mb-3">
+  <%= link_to "All", products_path, 
+      class: "btn #{@current_filter.nil? ? 'btn-primary' : 'btn-secondary'}" %>
+  <%= link_to "On Sale", products_path(filter: "on_sale"), 
+      class: "btn #{@current_filter == 'on_sale' ? 'btn-primary' : 'btn-danger'}" %>
+  <%= link_to "Newly Added", products_path(filter: "newly_added"), 
+      class: "btn #{@current_filter == 'newly_added' ? 'btn-primary' : 'btn-success'}" %>
+  <%= link_to "Recently Updated", products_path(filter: "recently_updated"), 
+      class: "btn #{@current_filter == 'recently_updated' ? 'btn-primary' : 'btn-info'}" %>
+</nav>
+
+<% if @current_filter.present? %>
+  <div class="alert alert-info mb-3">
+    <% case @current_filter %>
+    <% when 'on_sale' %>
+      <h4>On Sale Products</h4>
+      <p>Browse our special discounted items with great savings!</p>
+    <% when 'newly_added' %>
+      <h4>Newly Added Products</h4>
+      <p>Check out our latest additions from the past 3 days!</p>
+    <% when 'recently_updated' %>
+      <h4>Recently Updated Products</h4>
+      <p>Products that have been updated in the past 3 days.</p>
     <% end %>
-  <% else %>
-    <p>No products found.</p>
-  <% end %>
-<% else %>
-  <%# If filters are applied, show all filtered products in a single list %>
-  <% if @products.any? %>
+  </div>
+<% end %>
+
+<!-- Products Listing -->
+<% if @products.any? %>
+  <div class="row">
     <% @products.each do |product| %>
-      <div class="product border p-3 my-2">
-        <h3><%= link_to product.name, product_path(product) %></h3>
-        <p><%= truncate(product.description, length: 100) %></p>
-        <p><strong>Price:</strong> <%= number_to_currency(product.price) %></p>
-        <p><strong>Category:</strong> <%= product.category.name %></p>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <% if product.image.attached? %>
+            <%= image_tag url_for(product.image),
+                  class: "card-img-top",
+                  alt: product.name %>
+          <% else %>
+            <%= image_tag "placeholder.jpg",
+                  class: "card-img-top",
+                  alt: product.name %>
+          <% end %>
+
+          <div class="card-body">
+            <h5 class="card-title">
+              <%= link_to product.name, product_path(product) %>
+            </h5>
+            <p class="card-text">
+              <%= truncate(product.description, length: 100) %>
+            </p>
+
+            <% if product.on_sale? %>
+              <p class="card-text mb-1">
+                <span class="text-muted" style="text-decoration: line-through;">
+                  <%= number_to_currency(product.price) %>
+                </span>
+                <span class="text-danger">
+                  <%= number_to_currency(product.sale_price) %>
+                </span>
+                <small>(<%= product.discount_percentage %>% off)</small>
+              </p>
+            <% else %>
+              <p class="card-text">
+                <strong><%= number_to_currency(product.price) %></strong>
+              </p>
+            <% end %>
+            
+            <button class="btn btn-sm btn-primary mt-2 add-to-cart-btn" data-product-id="<%= product.id %>">
+              <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+
+          </div>
+        </div>
       </div>
     <% end %>
-    <div class="pagination">
-      <%= paginate @products %>
-    </div>
-  <% else %>
-    <p>No products found.</p>
-  <% end %>
+  </div>
+<% else %>
+  <p>No products found.</p>
 <% end %>

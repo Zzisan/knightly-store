@@ -7,6 +7,7 @@
 
     <%= stylesheet_link_tag "application", media: "all", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   </head>
 
   <body>
@@ -47,8 +48,13 @@
               </li>
             <% end %>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle position-relative" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Cart
+                <% if session[:cart].present? && session[:cart].values.sum > 0 %>
+                  <span id="cart-count" class="cart-count"><%= session[:cart].values.sum %></span>
+                <% else %>
+                  <span id="cart-count" class="cart-count" style="display: none;">0</span>
+                <% end %>
               </a>
               <ul class="dropdown-menu" aria-labelledby="cartDropdown">
                 <li><%= link_to "View Cart", cart_path, class: "dropdown-item" %></li>
