@@ -1,17 +1,133 @@
 <h1>Order Confirmation</h1>
 
-<p>Order ID: <%= @order.id %></p>
-<p>Order Date: <%= @order.order_date.strftime("%B %d, %Y %I:%M %p") %></p>
-<p>Total Amount: <%= number_to_currency(@order.total_amount) %></p>
-<p>Shipping Address: <%= @order.shipping_address %></p>
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2>Order Details</h2>
+      </div>
+      <div class="card-body">
+        <p><strong>Order ID:</strong> <%= @order.id %></p>
+        <p><strong>Order Date:</strong> <%= @order.order_date.strftime("%B %d, %Y %I:%M %p") %></p>
+        <p><strong>Status:</strong> <%= @order.status.capitalize %></p>
+        <p><strong>Shipping Address:</strong> <%= @order.shipping_address %></p>
+      </div>
+    </div>
 
-<h2>Order Items:</h2>
-<% @order.order_items.each do |item| %>
-  <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
-    <p><strong>Product:</strong> <%= item.product.name %></p>
-    <p><strong>Quantity:</strong> <%= item.quantity %></p>
-    <p><strong>Price at Order:</strong> <%= number_to_currency(item.price_at_order) %></p>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2>Order Items</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% subtotal = 0 %>
+              <% @order.order_items.each do |item| %>
+                <% item_subtotal = item.price_at_order * item.quantity %>
+                <% subtotal += item_subtotal %>
+                <tr>
+                  <td><%= item.product.name %></td>
+                  <td><%= item.quantity %></td>
+                  <td><%= number_to_currency(item.price_at_order) %></td>
+                  <td><%= number_to_currency(item_subtotal) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="d-grid gap-2">
+      <%= link_to "Continue Shopping", products_path, class: "btn btn-primary" %>
+      <%= link_to "View All Orders", orders_path, class: "btn btn-outline-secondary" %>
+    </div>
   </div>
-<% end %>
-
-<%= link_to "Continue Shopping", products_path %>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h2 class="mb-0">Order Summary</h2>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <div>Subtotal:</div>
+          <div><%= number_to_currency(@order.total_amount - (@order.tax_total || 0)) %></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header bg-info text-white">
+        <h2 class="mb-0">Tax Invoice</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Tax Type</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if @order.gst_amount && @order.gst_amount > 0 %>
+                <tr>
+                  <td>GST</td>
+                  <td><%= number_to_currency(@order.gst_amount) %></td>
+                </tr>
+              <% end %>
+              
+              <% if @order.pst_amount && @order.pst_amount > 0 %>
+                <tr>
+                  <td>PST</td>
+                  <td><%= number_to_currency(@order.pst_amount) %></td>
+                </tr>
+              <% end %>
+              
+              <% if @order.hst_amount && @order.hst_amount > 0 %>
+                <tr>
+                  <td>HST</td>
+                  <td><%= number_to_currency(@order.hst_amount) %></td>
+                </tr>
+              <% end %>
+              
+              <tr class="table-active">
+                <td><strong>Total Tax:</strong></td>
+                <td><strong><%= number_to_currency(@order.tax_total || 0) %></strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+          <small>
+            <strong>Note:</strong> This is your official tax invoice for this purchase.
+            Please keep it for your records.
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h2 class="mb-0">Grand Total</h2>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <div><strong>Total:</strong></div>
+          <div><strong><%= number_to_currency(@order.total_amount) %></strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
