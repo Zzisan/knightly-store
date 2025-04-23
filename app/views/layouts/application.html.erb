@@ -24,13 +24,20 @@
             <li class="nav-item">
               <%= link_to "Products", products_path, class: "nav-link" %>
             </li>
+
             <% if customer_signed_in? %>
-              <li class="nav-item">
-                <%= link_to "Order History", orders_path, class: "nav-link" %>
-              </li>
-              <li class="nav-item">
-                <%= link_to "Logout", destroy_customer_session_path, data: { turbo_method: "delete", turbo_confirm: "Are you sure you want to log out?" }, class: "nav-link" %>
-              </li>
+            <li class="nav-item">
+              <%= link_to "My Profile", profile_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= link_to "My Orders", orders_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= button_to "Logout", destroy_customer_session_path,
+                    method: :delete,
+                    data: { confirm: "Are you sure?" },
+                    class: "nav-link btn btn-link" %>
+            </li>
             <% else %>
               <li class="nav-item">
                 <%= link_to "Login", new_customer_session_path, class: "nav-link" %>
@@ -39,8 +46,22 @@
                 <%= link_to "Sign Up", new_customer_registration_path, class: "nav-link" %>
               </li>
             <% end %>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Cart
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="cartDropdown">
+                <li><%= link_to "View Cart", cart_path, class: "dropdown-item" %></li>
+                <li><%= link_to "Tax Invoice", preview_invoice_checkouts_path, class: "dropdown-item" %></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><%= link_to "Checkout", new_checkout_path, class: "dropdown-item" %></li>
+              </ul>
+            </li>
             <li class="nav-item">
-              <%= link_to "Cart", cart_path, class: "nav-link" %>
+              <%= link_to "About", about_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= link_to "Contact", contact_path, class: "nav-link" %>
             </li>
           </ul>
         </div>
