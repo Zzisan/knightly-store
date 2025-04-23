@@ -21,21 +21,7 @@ class CartController < ApplicationController
   # Add a product to the cart
   def add
     product_id = params[:product_id].to_s
-    quantity = 1
-    
-    # Try to parse quantity from params
-    if params[:quantity].present?
-      quantity = params[:quantity].to_i
-    elsif request.content_type =~ /json/
-      # Try to parse from request body for JSON requests
-      begin
-        json_params = JSON.parse(request.body.read)
-        quantity = json_params['quantity'].to_i if json_params['quantity'].present?
-      rescue JSON::ParserError
-        # If JSON parsing fails, default to 1
-        quantity = 1
-      end
-    end
+    quantity = params[:quantity].present? ? params[:quantity].to_i : 1
     
     # Ensure quantity is at least 1
     quantity = 1 if quantity < 1
@@ -47,25 +33,15 @@ class CartController < ApplicationController
     
     @product = Product.find_by(id: product_id)
     
-    respond_to do |format|
-      format.html { 
-        redirect_back(fallback_location: products_path, notice: "#{@product.name} added to cart!") 
-      }
-      format.js
-      format.json { 
-        render json: { 
-          success: true, 
-          message: "#{@product.name} added to cart!",
-          cart_count: session[:cart].values.sum,
-          product: {
-            id: @product.id,
-            name: @product.name,
-            price: @product.on_sale? ? @product.sale_price : @product.price,
-            image_url: @product.image.attached? ? url_for(@product.image) : nil
-          }
-        } 
-      }
-    end
+    # Show a popup notification
+    flash[:cart_added] = {
+      product_name: @product.name,
+      product_price: @product.on_sale? ? @product.sale_price : @product.price,
+      quantity: quantity
+    }
+    
+    # Redirect back to the previous page
+    redirect_back(fallback_location: products_path, notice: "#{@product.name} added to cart!")
   end
 
   # Update the quantity of a product in the cart

@@ -86,9 +86,9 @@
               </p>
             <% end %>
             
-            <button class="btn btn-sm btn-primary mt-2 add-to-cart-btn" data-product-id="<%= product.id %>">
+            <%= button_to add_to_cart_path(product_id: product.id), method: :post, class: "btn btn-sm btn-primary mt-2" do %>
               <i class="bi bi-cart-plus"></i> Add to Cart
-            </button>
+            <% end %>
 
           </div>
         </div>

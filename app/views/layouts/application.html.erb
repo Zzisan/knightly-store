@@ -50,10 +50,11 @@
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle position-relative" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Cart
-                <% if session[:cart].present? && session[:cart].values.sum > 0 %>
-                  <span id="cart-count" class="cart-count"><%= session[:cart].values.sum %></span>
-                <% else %>
-                  <span id="cart-count" class="cart-count" style="display: none;">0</span>
+                <% cart_count = session[:cart].present? ? session[:cart].values.sum : 0 %>
+                <% if cart_count > 0 %>
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <%= cart_count %>
+                  </span>
                 <% end %>
               </a>
               <ul class="dropdown-menu" aria-labelledby="cartDropdown">
@@ -81,6 +82,43 @@
       <% if alert %>
         <div class="alert alert-danger"><%= alert %></div>
       <% end %>
+      
+      <% if flash[:cart_added] %>
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+          <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-primary text-white">
+              <strong class="me-auto">Added to Cart</strong>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+              <p><strong><%= flash[:cart_added][:product_name] %></strong> has been added to your cart.</p>
+              <div class="mt-2 pt-2 border-top">
+                <%= link_to "View Cart", cart_path, class: "btn btn-sm btn-primary" %>
+                <%= link_to "Checkout", new_checkout_path, class: "btn btn-sm btn-success" %>
+                <%= link_to "View Tax Invoice", preview_invoice_checkouts_path, class: "btn btn-sm btn-info" %>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            var toast = document.querySelector('.toast');
+            var closeButton = toast.querySelector('.btn-close');
+            
+            // Auto-hide the toast after 5 seconds
+            setTimeout(function() {
+              toast.classList.remove('show');
+            }, 5000);
+            
+            // Close button functionality
+            closeButton.addEventListener('click', function() {
+              toast.classList.remove('show');
+            });
+          });
+        </script>
+      <% end %>
+      
       <%= yield %>
     </div>
 
