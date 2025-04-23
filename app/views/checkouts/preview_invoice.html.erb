@@ -1,0 +1,192 @@
+<h1>Tax Invoice Preview</h1>
+
+<div class="alert alert-info mb-4">
+  <p>This is a preview of your tax invoice. You can select different provinces to see how taxes will be calculated.</p>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Select Province</h3>
+      </div>
+      <div class="card-body">
+        <%= form_with url: preview_invoice_checkouts_path, method: :get, local: true, class: "mb-3" do |f| %>
+          <div class="row align-items-end">
+            <div class="col-md-8">
+              <label for="province_id" class="form-label">Province for Tax Calculation</label>
+              <%= select_tag :province_id, 
+                            options_from_collection_for_select(@provinces, :id, :name, params[:province_id] || current_customer.province_id), 
+                            include_blank: "Select a province", 
+                            class: "form-select" %>
+            </div>
+            <div class="col-md-4">
+              <%= submit_tag "Calculate Taxes", class: "btn btn-primary" %>
+            </div>
+          </div>
+        <% end %>
+        
+        <% if @selected_province %>
+          <div class="alert alert-success">
+            <h5>Tax rates for <%= @selected_province.name %>:</h5>
+            <ul class="mb-0">
+              <% if @selected_province.gst_rate > 0 %>
+                <li>GST: <%= number_to_percentage(@selected_province.gst_rate * 100, precision: 2) %></li>
+              <% end %>
+              <% if @selected_province.pst_rate > 0 %>
+                <li>PST: <%= number_to_percentage(@selected_province.pst_rate * 100, precision: 2) %></li>
+              <% end %>
+              <% if @selected_province.hst_rate > 0 %>
+                <li>HST: <%= number_to_percentage(@selected_province.hst_rate * 100, precision: 2) %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Order Items</h3>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @cart_items.each do |item| %>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <% if item[:product].image.attached? %>
+                        <%= image_tag url_for(item[:product].image), class: "me-2", style: "width: 50px; height: 50px; object-fit: cover;" %>
+                      <% end %>
+                      <div>
+                        <strong><%= item[:product].name %></strong>
+                        <% if item[:product].on_sale? %>
+                          <span class="badge bg-danger ms-2">SALE</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <% if item[:product].on_sale? %>
+                      <span class="text-danger"><%= number_to_currency(item[:product].sale_price) %></span>
+                      <small class="text-muted text-decoration-line-through d-block"><%= number_to_currency(item[:product].price) %></small>
+                    <% else %>
+                      <%= number_to_currency(item[:product].price) %>
+                    <% end %>
+                  </td>
+                  <td><%= item[:quantity] %></td>
+                  <td class="text-end"><%= number_to_currency(item[:subtotal]) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="d-grid gap-2">
+      <%= link_to "Proceed to Checkout", new_checkout_path, class: "btn btn-success btn-lg" %>
+      <%= link_to "Back to Cart", cart_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h3 class="mb-0">Tax Invoice</h3>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+          <div><strong>Subtotal:</strong></div>
+          <div><%= number_to_currency(@subtotal) %></div>
+        </div>
+        
+        <% if @selected_province %>
+          <div class="table-responsive mb-3">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Tax Type</th>
+                  <th>Rate</th>
+                  <th class="text-end">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if @gst_amount > 0 %>
+                  <tr>
+                    <td>GST</td>
+                    <td><%= number_to_percentage(@selected_province.gst_rate * 100, precision: 2) %></td>
+                    <td class="text-end"><%= number_to_currency(@gst_amount) %></td>
+                  </tr>
+                <% end %>
+                
+                <% if @pst_amount > 0 %>
+                  <tr>
+                    <td>PST</td>
+                    <td><%= number_to_percentage(@selected_province.pst_rate * 100, precision: 2) %></td>
+                    <td class="text-end"><%= number_to_currency(@pst_amount) %></td>
+                  </tr>
+                <% end %>
+                
+                <% if @hst_amount > 0 %>
+                  <tr>
+                    <td>HST</td>
+                    <td><%= number_to_percentage(@selected_province.hst_rate * 100, precision: 2) %></td>
+                    <td class="text-end"><%= number_to_currency(@hst_amount) %></td>
+                  </tr>
+                <% end %>
+                
+                <tr class="table-active">
+                  <td colspan="2"><strong>Total Tax:</strong></td>
+                  <td class="text-end"><strong><%= number_to_currency(@tax_total) %></strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="alert alert-warning mb-3">
+            Please select a province to see tax calculations.
+          </div>
+        <% end %>
+        
+        <hr>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div><strong>Grand Total:</strong></div>
+          <div><strong><%= number_to_currency(@subtotal + @tax_total) %></strong></div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+          <small>
+            <strong>Note:</strong> This is a preview of your tax invoice. The final invoice will be generated when you complete your order.
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h3 class="mb-0">Invoice Information</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Invoice Date:</strong> <%= Date.today.strftime("%B %d, %Y") %></p>
+        <p><strong>Customer:</strong> <%= current_customer.first_name %> <%= current_customer.last_name %></p>
+        <p><strong>Email:</strong> <%= current_customer.email %></p>
+        
+        <% if @selected_province %>
+          <p><strong>Tax Region:</strong> <%= @selected_province.name %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
