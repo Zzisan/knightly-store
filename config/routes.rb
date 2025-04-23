@@ -1,10 +1,15 @@
 Rails.application.routes.draw do
+  get "checkouts/new"
+  get "checkouts/create"
   get "home/index"
   root 'home#index'
   
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
   devise_for :customers
+  
+  # Profile management
+  resource :profile, only: [:show, :edit, :update]
   
   resources :products, only: [:index, :show]
   
@@ -14,7 +19,13 @@ Rails.application.routes.draw do
     delete 'remove/:product_id', action: :remove, as: :remove_item
   end
   
-  resource :checkout, only: [:new, :create]
+  resources :checkouts, only: [:new, :create] do
+    collection do
+      get 'calculate_taxes_for_province'
+      get 'preview_invoice'
+    end
+  end
+
   resources :orders, only: [:index, :show]
   
   # Static pages routes:
@@ -25,4 +36,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+
+  # The dynamic show route that fetches a Page by its slug
+  get 'pages/:slug', to: 'pages#show', as: :page
 end
