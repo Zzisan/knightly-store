@@ -1,24 +1,25 @@
 // Cart Manager - Handles cart operations and notifications
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize the cart functionality
-  initializeCart();
-  
-  // Update cart count in the header
-  updateCartCount();
-});
 
-function initializeCart() {
+// Export functions for use in other modules
+export function initializeCart() {
+  console.log('Initializing cart functionality');
+  
   // Find all add-to-cart buttons
   const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+  console.log(`Found ${addToCartButtons.length} add-to-cart buttons`);
   
   // Add event listeners to all add-to-cart buttons
   addToCartButtons.forEach(button => {
     button.addEventListener('click', function(event) {
       event.preventDefault();
+      console.log('Add to cart button clicked');
       
       const productId = this.getAttribute('data-product-id');
+      console.log(`Product ID: ${productId}`);
+      
       const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
       const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+      console.log(`Quantity: ${quantity}`);
       
       // Add the product to the cart
       addToCart(productId, quantity);
@@ -26,7 +27,35 @@ function initializeCart() {
   });
 }
 
-function addToCart(productId, quantity = 1) {
+export function updateCartCount(count) {
+  // Get the cart count from the server if not provided
+  if (count === undefined) {
+    fetch('/cart.json', {
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      const cartCount = Object.values(data.cart || {}).reduce((a, b) => a + b, 0);
+      updateCartCountDisplay(cartCount);
+    })
+    .catch(error => {
+      console.error('Error fetching cart count:', error);
+      // Try to get the count from the DOM as a fallback
+      const cartCountElement = document.getElementById('cart-count');
+      if (cartCountElement && cartCountElement.textContent) {
+        updateCartCountDisplay(parseInt(cartCountElement.textContent) || 0);
+      }
+    });
+  } else {
+    updateCartCountDisplay(count);
+  }
+}
+
+export function addToCart(productId, quantity = 1) {
   // Show loading state
   const button = document.querySelector(`.add-to-cart-btn[data-product-id="${productId}"]`);
   if (button) {
@@ -35,6 +64,9 @@ function addToCart(productId, quantity = 1) {
     button.disabled = true;
   }
   
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+  
   // Make AJAX request to add the product to the cart
   fetch(`/cart/add/${productId}`, {
     method: 'POST',
@@ -42,8 +74,9 @@ function addToCart(productId, quantity = 1) {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      'X-CSRF-Token': csrfToken || ''
     },
+    credentials: 'same-origin',
     body: JSON.stringify({ quantity: quantity })
   })
   .then(response => response.json())
@@ -84,20 +117,28 @@ function updateCartCount(count) {
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
-      }
+      },
+      credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
       const cartCount = Object.values(data.cart || {}).reduce((a, b) => a + b, 0);
       updateCartCountDisplay(cartCount);
     })
-    .catch(error => console.error('Error fetching cart count:', error));
+    .catch(error => {
+      console.error('Error fetching cart count:', error);
+      // Try to get the count from the DOM as a fallback
+      const cartCountElement = document.getElementById('cart-count');
+      if (cartCountElement && cartCountElement.textContent) {
+        updateCartCountDisplay(parseInt(cartCountElement.textContent) || 0);
+      }
+    });
   } else {
     updateCartCountDisplay(count);
   }
 }
 
-function updateCartCountDisplay(count) {
+export function updateCartCountDisplay(count) {
   // Update the cart count in the header
   const cartCountElement = document.getElementById('cart-count');
   if (cartCountElement) {
@@ -112,7 +153,7 @@ function updateCartCountDisplay(count) {
   }
 }
 
-function showCartNotification(data) {
+export function showCartNotification(data) {
   // Remove any existing notification
   const existingNotification = document.getElementById('cart-notification');
   if (existingNotification) {
@@ -171,7 +212,7 @@ function showCartNotification(data) {
   }, 5000);
 }
 
-function formatCurrency(amount) {
+export function formatCurrency(amount) {
   return new Intl.NumberFormat('en-CA', { 
     style: 'currency', 
     currency: 'CAD' 

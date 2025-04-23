@@ -13,8 +13,8 @@ Rails.application.routes.draw do
   
   resources :products, only: [:index, :show]
   
-  resource :cart, only: [:show], controller: 'cart', defaults: { format: 'html' } do
-    post 'add/:product_id', action: :add, as: :add_to, defaults: { format: 'json' }
+  resource :cart, only: [:show], controller: 'cart' do
+    post 'add/:product_id', action: :add, as: :add_to
     patch 'update/:product_id', action: :update, as: :update_item
     delete 'remove/:product_id', action: :remove, as: :remove_item
   end

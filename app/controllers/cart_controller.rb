@@ -21,8 +21,26 @@ class CartController < ApplicationController
   # Add a product to the cart
   def add
     product_id = params[:product_id].to_s
-    quantity = params[:quantity].present? ? params[:quantity].to_i : 1
+    quantity = 1
     
+    # Try to parse quantity from params
+    if params[:quantity].present?
+      quantity = params[:quantity].to_i
+    elsif request.content_type =~ /json/
+      # Try to parse from request body for JSON requests
+      begin
+        json_params = JSON.parse(request.body.read)
+        quantity = json_params['quantity'].to_i if json_params['quantity'].present?
+      rescue JSON::ParserError
+        # If JSON parsing fails, default to 1
+        quantity = 1
+      end
+    end
+    
+    # Ensure quantity is at least 1
+    quantity = 1 if quantity < 1
+    
+    # Update cart in session
     session[:cart] ||= {}
     session[:cart][product_id] ||= 0
     session[:cart][product_id] += quantity
