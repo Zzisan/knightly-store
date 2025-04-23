@@ -1,0 +1,165 @@
+<h1>Checkout</h1>
+
+<% if @cart_items.empty? %>
+  <p>Your cart is empty.</p>
+  <%= link_to "Continue Shopping", products_path, class: "btn btn-primary" %>
+<% else %>
+  <div class="row">
+    <div class="col-md-8">
+      <%= form_with model: @order, url: checkouts_path, method: :post, local: true, data: { turbo: false } do |f| %>
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3>Shipping Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <%= f.label :shipping_address, "Shipping Address", class: "form-label" %>
+              <%= f.text_area :shipping_address, class: "form-control", rows: 3, required: true %>
+            </div>
+            
+            <div class="mb-3">
+              <%= label_tag :province_id, "Province (for tax calculation)", class: "form-label" %>
+              <%= select_tag :province_id, 
+                             options_from_collection_for_select(@provinces, :id, :name, current_customer.province_id), 
+                             include_blank: "Select a province", 
+                             class: "form-select", 
+                             required: true,
+                             onchange: "updateTaxCalculation(this.value)" %>
+            </div>
+            
+            <div class="mb-3 form-check">
+              <%= check_box_tag :use_for_profile, "1", false, class: "form-check-input" %>
+              <%= label_tag :use_for_profile, "Save this address to my profile", class: "form-check-label" %>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <%= f.submit "Place Order", class: "btn btn-primary btn-lg" %>
+          <div class="d-flex gap-2">
+            <%= link_to "View Tax Invoice", preview_invoice_checkouts_path(province_id: params[:province_id]), class: "btn btn-info flex-grow-1" %>
+            <%= link_to "Back to Cart", cart_path, class: "btn btn-outline-secondary flex-grow-1" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">Order Summary</h3>
+        </div>
+        <div class="card-body">
+          <div class="order-items mb-3">
+            <% @cart_items.each do |item| %>
+              <div class="d-flex justify-content-between mb-2">
+                <div>
+                  <strong><%= item[:product].name %></strong> 
+                  <small class="text-muted">x<%= item[:quantity] %></small>
+                </div>
+                <div><%= number_to_currency(item[:subtotal]) %></div>
+              </div>
+            <% end %>
+          </div>
+          
+          <hr>
+          
+          <div class="d-flex justify-content-between mb-2">
+            <div>Subtotal:</div>
+            <div id="subtotal-amount"><%= number_to_currency(@subtotal) %></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+          <h3 class="mb-0">Tax Invoice</h3>
+        </div>
+        <div class="card-body">
+          <!-- Loading indicator -->
+          <div id="tax-loading" style="display: none;">
+            <div class="d-flex justify-content-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <p class="text-center mt-2">Calculating taxes...</p>
+          </div>
+          
+          <!-- Empty state when no province is selected -->
+          <div id="tax-invoice-empty" style="<%= @selected_province ? 'display: none;' : '' %>">
+            <div class="alert alert-warning">
+              Please select a province to calculate taxes.
+            </div>
+          </div>
+          
+          <!-- Tax calculation results -->
+          <div id="tax-invoice-content" style="<%= @selected_province ? '' : 'display: none;' %>">
+            <div class="mb-3">
+              <h5>Tax Rates for <span id="province-name"><%= @selected_province&.name %></span></h5>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Tax Type</th>
+                      <th>Rate</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr id="gst-row" style="<%= @gst_amount > 0 ? '' : 'display: none;' %>">
+                      <td>GST</td>
+                      <td id="gst-rate"><%= number_to_percentage(@selected_province&.gst_rate.to_f * 100, precision: 2) %></td>
+                      <td id="gst-amount"><%= number_to_currency(@gst_amount) %></td>
+                    </tr>
+                    
+                    <tr id="pst-row" style="<%= @pst_amount > 0 ? '' : 'display: none;' %>">
+                      <td>PST</td>
+                      <td id="pst-rate"><%= number_to_percentage(@selected_province&.pst_rate.to_f * 100, precision: 2) %></td>
+                      <td id="pst-amount"><%= number_to_currency(@pst_amount) %></td>
+                    </tr>
+                    
+                    <tr id="hst-row" style="<%= @hst_amount > 0 ? '' : 'display: none;' %>">
+                      <td>HST</td>
+                      <td id="hst-rate"><%= number_to_percentage(@selected_province&.hst_rate.to_f * 100, precision: 2) %></td>
+                      <td id="hst-amount"><%= number_to_currency(@hst_amount) %></td>
+                    </tr>
+                    
+                    <tr class="table-active">
+                      <td colspan="2"><strong>Total Tax:</strong></td>
+                      <td><strong id="tax-total"><%= number_to_currency(@tax_total) %></strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h3 class="mb-0">Order Total</h3>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <div>Subtotal:</div>
+            <div id="order-subtotal"><%= number_to_currency(@subtotal) %></div>
+          </div>
+          
+          <div class="d-flex justify-content-between mb-2">
+            <div>Tax Total:</div>
+            <div id="order-tax-total"><%= number_to_currency(@tax_total) %></div>
+          </div>
+          
+          <hr>
+          
+          <div class="d-flex justify-content-between mb-2">
+            <div><strong>Grand Total:</strong></div>
+            <div><strong id="grand-total"><%= number_to_currency(@subtotal + @tax_total) %></strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
