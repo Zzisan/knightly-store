@@ -22,3 +22,13 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+cat << 'EOF' >> README.md
+
+## Installation
+
+1. `bundle install`  
+2. `rails db:create db:migrate db:seed`  
+3. `rails server`  
+4. Open `http://localhost:3000` in your browser
+
+EOF
