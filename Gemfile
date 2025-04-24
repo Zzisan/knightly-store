@@ -4,7 +4,7 @@ gem 'activeadmin'
 gem 'devise'
 gem 'sassc-rails'
 gem 'stripe'
-gem 'bootstrap', '~> 5.1.3'
+gem 'bootstrap', '~> 5.3.5'
 gem 'kaminari'
 gem 'faker'
 
