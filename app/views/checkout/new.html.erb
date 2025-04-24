@@ -1,20 +1,30 @@
 <h1>Checkout</h1>
 
-<p>Total Amount: 
-  <% total = 0 %>
-  <% (session[:cart] || {}).each do |product_id, quantity| %>
-    <% product = Product.find_by(id: product_id) %>
-    <% total += product.price * quantity if product %>
-  <% end %>
-  <%= number_to_currency(total) %>
-</p>
+<% if session[:cart].blank? || session[:cart].empty? %>
+  <p>Your cart is empty.</p>
+<% else %>
+  <div class="order-summary mb-4">
+    <h3>Your Order:</h3>
+    <% total = 0 %>
+    <ul>
+      <% session[:cart].each do |product_id, quantity| %>
+        <% if (product = Product.find_by(id: product_id)) %>
+          <% subtotal = product.price * quantity %>
+          <% total += subtotal %>
+          <li>
+            <strong><%= product.name %></strong> (x<%= quantity %>) – <%= number_to_currency(subtotal) %>
+          </li>
+        <% end %>
+      <% end %>
+    </ul>
+    <p><strong>Total: <%= number_to_currency(total) %></strong></p>
+  </div>
 
-<%= form_with model: @order, url: checkout_path, local: true do |f| %>
-  <div>
-    <%= f.label :shipping_address, "Shipping Address" %>
-    <%= f.text_field :shipping_address, value: current_customer.address %>
-  </div>
-  <div>
-    <%= f.submit "Place Order" %>
-  </div>
+  <%= form_with model: @order, url: checkout_path, local: true do |f| %>
+    <div class="mb-3">
+      <%= f.label :shipping_address, "Shipping Address" %>
+      <%= f.text_field :shipping_address, class: "form-control", placeholder: "Enter your shipping address" %>
+    </div>
+    <%= f.submit "Place Order", class: "btn btn-primary" %>
+  <% end %>
 <% end %>

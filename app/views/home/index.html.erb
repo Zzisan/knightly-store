@@ -1,15 +1,361 @@
-<h1>Welcome to Knightly</h1>
-<p>Your curated medieval armory awaits!</p>
-
-<%= link_to "Browse Products", products_path %>
-
-<h2>Featured Products</h2>
-<% @products = Product.limit(5) %>
-<% @products.each do |product| %>
-  <div style="border: 1px solid #ccc; margin: 1rem; padding: 1rem;">
-    <h3><%= product.name %></h3>
-    <p><%= truncate(product.description, length: 80) %></p>
-    <p><strong>Price:</strong> $<%= product.price %></p>
-    <%= link_to "View Details", product_path(product) %>
+<!-- Hero Section with Carousel -->
+<div id="heroCarousel" class="carousel slide carousel-fade mb-5" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
   </div>
+  
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <div class="hero-slide d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1599719500956-d158a26ab3ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; height: 500px;">
+        <div class="container text-center">
+          <h1 class="display-4 fw-bold mb-3">Welcome to Knightly</h1>
+          <p class="lead mb-4">Explore our curated medieval armory and legendary artifacts</p>
+          <%= link_to products_path, class: "btn btn-primary btn-lg px-4" do %>
+            <i class="bi bi-shield-fill me-1" aria-hidden="true"></i> Explore Collection
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="carousel-item">
+      <div class="hero-slide d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1615486511484-92e172cc4fe0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; height: 500px;">
+        <div class="container text-center">
+          <h1 class="display-4 fw-bold mb-3">Special Offers</h1>
+          <p class="lead mb-4">Discover our limited-time deals on premium medieval items</p>
+          <%= link_to products_path(filter: "on_sale"), class: "btn btn-danger btn-lg px-4" do %>
+            <i class="bi bi-tag-fill me-1" aria-hidden="true"></i> View Sales
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="carousel-item">
+      <div class="hero-slide d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1551269901-5c5e14c25df7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; height: 500px;">
+        <div class="container text-center">
+          <h1 class="display-4 fw-bold mb-3">New Arrivals</h1>
+          <p class="lead mb-4">Be the first to explore our latest additions</p>
+          <%= link_to products_path(filter: "newly_added"), class: "btn btn-success btn-lg px-4" do %>
+            <i class="bi bi-stars me-1" aria-hidden="true"></i> Shop New Items
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+
+<!-- Featured Categories -->
+<section class="mb-5">
+  <div class="container">
+    <h2 class="page-title mb-4">Shop by Category</h2>
+    
+    <div class="row g-4">
+      <% Category.all.limit(4).each do |category| %>
+        <div class="col-md-6 col-lg-3">
+          <div class="card border-0 shadow-sm h-100 category-card">
+            <div class="card-body text-center p-4">
+              <div class="category-icon mb-3">
+                <i class="bi bi-shield-fill display-4" aria-hidden="true"></i>
+              </div>
+              <h3 class="h5 mb-3"><%= category.name %></h3>
+              <p class="text-muted small mb-4">Explore our collection of <%= category.name.downcase %></p>
+              <%= link_to products_path(category_id: category.id), class: "btn btn-outline-primary" do %>
+                Browse <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="mb-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="page-title mb-0">Featured Products</h2>
+      <%= link_to products_path, class: "btn btn-outline-primary" do %>
+        View All <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+      <% end %>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      <% Product.where(featured: true).or(Product.where("sale_price IS NOT NULL")).limit(4).each do |product| %>
+        <div class="col">
+          <div class="card h-100 border-0 shadow-sm product-card">
+            <div class="position-relative">
+              <% if product.image.attached? %>
+                <%= image_tag url_for(product.image),
+                      class: "card-img-top",
+                      style: "height: 200px; object-fit: cover;",
+                      alt: product.name %>
+              <% else %>
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                  <i class="bi bi-image text-muted" style="font-size: 3rem;" aria-hidden="true"></i>
+                </div>
+              <% end %>
+              
+              <% if product.on_sale? %>
+                <div class="position-absolute top-0 end-0 m-2">
+                  <span class="badge bg-danger p-2">
+                    <%= product.discount_percentage %>% OFF
+                  </span>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h3 class="card-title h5 mb-0">
+                  <%= link_to product.name, product_path(product), class: "text-decoration-none text-dark stretched-link" %>
+                </h3>
+                <% if product.category.present? %>
+                  <span class="badge bg-secondary">
+                    <%= product.category.name %>
+                  </span>
+                <% end %>
+              </div>
+              
+              <p class="card-text text-muted small flex-grow-1">
+                <%= truncate(product.description, length: 80) %>
+              </p>
+
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                  <% if product.on_sale? %>
+                    <div>
+                      <span class="text-muted small" style="text-decoration: line-through;">
+                        <%= number_to_currency(product.price) %>
+                      </span>
+                    </div>
+                    <div class="fw-bold text-danger">
+                      <%= number_to_currency(product.sale_price) %>
+                    </div>
+                  <% else %>
+                    <div class="fw-bold">
+                      <%= number_to_currency(product.price) %>
+                    </div>
+                  <% end %>
+                </div>
+                
+                <%= button_to add_to_cart_path(product_id: product.id), method: :post, class: "btn btn-primary btn-sm" do %>
+                  <i class="bi bi-cart-plus" aria-hidden="true"></i> Add
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- Category Sections -->
+<% Category.all.each do |category| %>
+  <% products = Product.where(category: category).limit(8) %>
+  <% if products.any? %>
+    <section class="mb-5">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="page-title mb-0"><%= category.name %></h2>
+          <%= link_to products_path(category_id: category.id), class: "btn btn-outline-primary" do %>
+            View All <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+          <% end %>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+          <% products.each do |product| %>
+            <div class="col">
+              <div class="card h-100 border-0 shadow-sm product-card">
+                <div class="position-relative">
+                  <% if product.image.attached? %>
+                    <%= image_tag url_for(product.image),
+                          class: "card-img-top",
+                          style: "height: 200px; object-fit: cover;",
+                          alt: product.name %>
+                  <% else %>
+                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;" aria-hidden="true"></i>
+                    </div>
+                  <% end %>
+                  
+                  <% if product.on_sale? %>
+                    <div class="position-absolute top-0 end-0 m-2">
+                      <span class="badge bg-danger">
+                        <%= product.discount_percentage %>% OFF
+                      </span>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="card-body d-flex flex-column">
+                  <h3 class="card-title h6 mb-2">
+                    <%= link_to product.name, product_path(product), class: "text-decoration-none text-dark stretched-link" %>
+                  </h3>
+                  
+                  <div class="mt-auto">
+                    <% if product.on_sale? %>
+                      <div class="d-flex align-items-center">
+                        <span class="fw-bold text-danger me-2"><%= number_to_currency(product.sale_price) %></span>
+                        <span class="text-muted small text-decoration-line-through"><%= number_to_currency(product.price) %></span>
+                      </div>
+                    <% else %>
+                      <div class="fw-bold"><%= number_to_currency(product.price) %></div>
+                    <% end %>
+                    
+                    <div class="d-grid mt-2">
+                      <%= button_to add_to_cart_path(product_id: product.id), method: :post, class: "btn btn-sm btn-primary" do %>
+                        <i class="bi bi-cart-plus me-1" aria-hidden="true"></i> Add to Cart
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
 <% end %>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light mb-5">
+  <div class="container">
+    <h2 class="text-center mb-5">What Our Customers Say</h2>
+    
+    <div class="row">
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between mb-3">
+              <div class="text-warning">
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+              </div>
+              <div class="text-primary">
+                <i class="bi bi-quote" aria-hidden="true"></i>
+              </div>
+            </div>
+            <p class="mb-4">"The quality of the medieval sword I purchased exceeded my expectations. The craftsmanship is impeccable, and it arrived well-packaged and on time."</p>
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                <span class="fw-bold">JD</span>
+              </div>
+              <div>
+                <h3 class="h6 mb-1">John Doe</h3>
+                <p class="small text-muted mb-0">Verified Customer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between mb-3">
+              <div class="text-warning">
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-half" aria-hidden="true"></i>
+              </div>
+              <div class="text-primary">
+                <i class="bi bi-quote" aria-hidden="true"></i>
+              </div>
+            </div>
+            <p class="mb-4">"I've been collecting medieval artifacts for years, and Knightly has become my go-to shop. Their selection is unmatched, and their customer service is exceptional."</p>
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                <span class="fw-bold">JS</span>
+              </div>
+              <div>
+                <h3 class="h6 mb-1">Jane Smith</h3>
+                <p class="small text-muted mb-0">Verified Customer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between mb-3">
+              <div class="text-warning">
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+                <i class="bi bi-star-fill" aria-hidden="true"></i>
+              </div>
+              <div class="text-primary">
+                <i class="bi bi-quote" aria-hidden="true"></i>
+              </div>
+            </div>
+            <p class="mb-4">"The shield I ordered was even more beautiful in person than in the photos. It's now the centerpiece of my collection. Fast shipping and great packaging too!"</p>
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                <span class="fw-bold">RJ</span>
+              </div>
+              <div>
+                <h3 class="h6 mb-1">Robert Johnson</h3>
+                <p class="small text-muted mb-0">Verified Customer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action -->
+<section class="mb-5">
+  <div class="container">
+    <div class="card border-0 shadow-sm overflow-hidden">
+      <div class="row g-0">
+        <div class="col-md-6 d-none d-md-block">
+          <img src="https://images.unsplash.com/photo-1589182337358-2cb63099350c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="img-fluid h-100" style="object-fit: cover;" alt="Medieval collection">
+        </div>
+        <div class="col-md-6 bg-primary text-white">
+          <div class="card-body p-5">
+            <h2 class="card-title h3 mb-3">Join Our Newsletter</h2>
+            <p class="card-text mb-4">Subscribe to receive updates on new products, special offers, and medieval history insights.</p>
+            
+            <form class="mb-3">
+              <div class="input-group mb-3">
+                <input type="email" class="form-control" placeholder="Your email address" aria-label="Email address">
+                <button class="btn btn-light" type="submit">Subscribe</button>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="privacyCheck">
+                <label class="form-check-label small" for="privacyCheck">
+                  I agree to the privacy policy and terms of service
+                </label>
+              </div>
+            </form>
+            
+            <p class="small mb-0">We respect your privacy and will never share your information.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -6,9 +6,7 @@ gem 'sassc-rails'
 gem 'stripe'
 gem 'bootstrap', '~> 5.1.3'
 gem 'kaminari'
-gem 'importmap-rails'
 gem 'faker'
-gem 'httparty'
 
 gem 'dotenv-rails', groups: [:development, :test]
 
@@ -73,3 +71,5 @@ end
 group :development, :test do
   gem 'rspec-rails', '~> 5.0.0'
 end
+
+# gem "nokogiri", "~> 1.18" # Removed as part of scraping cleanup

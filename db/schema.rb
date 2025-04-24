@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_09_070019) do
+ActiveRecord::Schema[7.2].define(version: 2025_04_24_082935) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
     t.text "body"
@@ -84,7 +84,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_09_070019) do
     t.string "last_name"
     t.string "phone"
     t.string "address"
+    t.integer "province_id"
     t.index ["email"], name: "index_customers_on_email", unique: true
+    t.index ["province_id"], name: "index_customers_on_province_id"
     t.index ["reset_password_token"], name: "index_customers_on_reset_password_token", unique: true
   end
 
@@ -95,6 +97,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_09_070019) do
     t.decimal "price_at_order"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "product_name"
+    t.text "product_description"
     t.index ["order_id"], name: "index_order_items_on_order_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
   end
@@ -107,6 +111,15 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_09_070019) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "shipping_address"
+    t.decimal "gst_amount", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "pst_amount", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "hst_amount", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "tax_total", precision: 10, scale: 2, default: "0.0", null: false
+    t.string "payment_id"
+    t.string "province_name"
+    t.decimal "province_gst_rate", precision: 5, scale: 3, default: "0.0"
+    t.decimal "province_pst_rate", precision: 5, scale: 3, default: "0.0"
+    t.decimal "province_hst_rate", precision: 5, scale: 3, default: "0.0"
     t.index ["customer_id"], name: "index_orders_on_customer_id"
   end
 
@@ -127,11 +140,25 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_09_070019) do
     t.integer "category_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "on_sale"
+    t.integer "discount_percentage", default: 0, null: false
+    t.decimal "sale_price", precision: 10, scale: 2
+    t.boolean "featured"
     t.index ["category_id"], name: "index_products_on_category_id"
+  end
+
+  create_table "provinces", force: :cascade do |t|
+    t.string "name", null: false
+    t.decimal "gst_rate", precision: 5, scale: 4, default: "0.05", null: false
+    t.decimal "pst_rate", precision: 5, scale: 4, default: "0.0", null: false
+    t.decimal "hst_rate", precision: 5, scale: 4, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "customers", "provinces"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "customers"

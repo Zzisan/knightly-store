@@ -1,98 +1,179 @@
-<h1>Your Shopping Cart</h1>
+<h1 class="page-title mb-4">Your Shopping Cart</h1>
 
 <% if session[:cart].present? && session[:cart].any? %>
-  <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-      <h2 class="mb-0">Cart Items</h2>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Price</th>
-              <th>Quantity</th>
-              <th class="text-end">Subtotal</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% total = 0 %>
-            <% session[:cart].each do |product_id, quantity| %>
-              <% product = Product.find_by(id: product_id) %>
-              <% if product %>
-                <% price = product.on_sale? ? product.sale_price : product.price %>
-                <% subtotal = price * quantity %>
-                <% total += subtotal %>
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white py-3">
+          <h2 class="h4 mb-0">
+            <i class="bi bi-cart3 me-2" aria-hidden="true"></i>Cart Items
+          </h2>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
                 <tr>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <% if product.image.attached? %>
-                        <%= image_tag url_for(product.image), class: "me-2", style: "width: 50px; height: 50px; object-fit: cover;" %>
-                      <% end %>
-                      <div>
-                        <strong><%= product.name %></strong>
-                        <% if product.on_sale? %>
-                          <span class="badge bg-danger ms-2">SALE</span>
-                        <% end %>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <% if product.on_sale? %>
-                      <span class="text-danger"><%= number_to_currency(product.sale_price) %></span>
-                      <small class="text-muted text-decoration-line-through d-block"><%= number_to_currency(product.price) %></small>
-                    <% else %>
-                      <%= number_to_currency(product.price) %>
-                    <% end %>
-                  </td>
-                  <td>
-                    <%= form_with url: update_item_cart_path(product_id: product.id), method: :patch, local: true, class: "d-flex align-items-center" do |f| %>
-                      <%= f.number_field :quantity, value: quantity, min: 1, class: "form-control form-control-sm me-2", style: "width: 70px;" %>
-                      <%= f.submit "Update", class: "btn btn-sm btn-outline-primary" %>
-                    <% end %>
-                  </td>
-                  <td class="text-end"><%= number_to_currency(subtotal) %></td>
-                  <td>
-                    <%= button_to remove_item_cart_path(product_id: product.id), method: :delete, class: "btn btn-sm btn-outline-danger", data: { confirm: "Are you sure you want to remove this item?" } do %>
-                      <i class="bi bi-trash"></i> Remove
-                    <% end %>
-                  </td>
+                  <th scope="col" class="ps-4">Product</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col" class="text-end">Subtotal</th>
+                  <th scope="col" class="text-center">Actions</th>
                 </tr>
-              <% end %>
+              </thead>
+              <tbody>
+                <% total = 0 %>
+                <% session[:cart].each do |product_id, quantity| %>
+                  <% product = Product.find_by(id: product_id) %>
+                  <% if product %>
+                    <% price = product.on_sale? ? product.sale_price : product.price %>
+                    <% subtotal = price * quantity %>
+                    <% total += subtotal %>
+                    <tr>
+                      <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                          <% if product.image.attached? %>
+                            <%= link_to product_path(product) do %>
+                              <%= image_tag url_for(product.image), class: "rounded me-3", style: "width: 64px; height: 64px; object-fit: cover;" %>
+                            <% end %>
+                          <% else %>
+                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                              <i class="bi bi-image text-muted" aria-hidden="true"></i>
+                            </div>
+                          <% end %>
+                          <div>
+                            <h3 class="h6 mb-1">
+                              <%= link_to product.name, product_path(product), class: "text-decoration-none text-dark" %>
+                            </h3>
+                            <div class="d-flex align-items-center">
+                              <% if product.category.present? %>
+                                <span class="badge bg-secondary me-2"><%= product.category.name %></span>
+                              <% end %>
+                              <% if product.on_sale? %>
+                                <span class="badge bg-danger">SALE</span>
+                              <% end %>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <% if product.on_sale? %>
+                          <div class="text-danger fw-bold"><%= number_to_currency(product.sale_price) %></div>
+                          <small class="text-muted text-decoration-line-through"><%= number_to_currency(product.price) %></small>
+                        <% else %>
+                          <div class="fw-bold"><%= number_to_currency(product.price) %></div>
+                        <% end %>
+                      </td>
+                      <td>
+                        <%= form_with url: update_item_cart_path(product_id: product.id), method: :patch, local: true, class: "d-flex align-items-center" do |f| %>
+                          <div class="input-group input-group-sm" style="width: 110px;">
+                            <%= f.number_field :quantity, value: quantity, min: 1, max: product.stock_quantity, class: "form-control", aria: { label: "Quantity" } %>
+                            <button type="submit" class="btn btn-outline-primary">
+                              <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                            </button>
+                          </div>
+                        <% end %>
+                      </td>
+                      <td class="text-end fw-bold"><%= number_to_currency(subtotal) %></td>
+                      <td class="text-center">
+                        <%= button_to remove_item_cart_path(product_id: product.id), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Are you sure you want to remove this item?" } } do %>
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="d-flex justify-content-between mb-4">
+        <%= link_to products_path, class: "btn btn-outline-secondary" do %>
+          <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Continue Shopping
+        <% end %>
+        
+        <%= button_to clear_cart_path, method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Are you sure you want to empty your cart?" } } do %>
+          <i class="bi bi-trash me-1" aria-hidden="true"></i> Empty Cart
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white py-3">
+          <h2 class="h4 mb-0">
+            <i class="bi bi-receipt me-2" aria-hidden="true"></i>Order Summary
+          </h2>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-3">
+            <span>Subtotal</span>
+            <span class="fw-bold"><%= number_to_currency(total) %></span>
+          </div>
+          
+          <div class="d-flex justify-content-between mb-3">
+            <span>Shipping</span>
+            <span>Calculated at checkout</span>
+          </div>
+          
+          <div class="d-flex justify-content-between mb-3">
+            <span>Taxes</span>
+            <span>Calculated at checkout</span>
+          </div>
+          
+          <hr>
+          
+          <div class="d-flex justify-content-between mb-4">
+            <span class="fw-bold">Estimated Total</span>
+            <span class="fw-bold fs-5"><%= number_to_currency(total) %>+</span>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <%= link_to new_checkout_path, class: "btn btn-success btn-lg" do %>
+              <i class="bi bi-credit-card me-1" aria-hidden="true"></i> Proceed to Checkout
             <% end %>
-          </tbody>
-          <tfoot>
-            <tr class="table-active">
-              <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
-              <td class="text-end"><strong><%= number_to_currency(total) %></strong></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td colspan="3" class="text-end text-muted"><small>Taxes will be calculated at checkout</small></td>
-              <td colspan="2"></td>
-            </tr>
-          </tfoot>
-        </table>
+            
+            <%= link_to preview_invoice_checkouts_path, class: "btn btn-outline-primary" do %>
+              <i class="bi bi-receipt me-1" aria-hidden="true"></i> View Tax Invoice
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h3 class="h5 mb-3">
+            <i class="bi bi-shield-check me-2 text-success" aria-hidden="true"></i>Secure Checkout
+          </h3>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2">
+              <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
+              <span>SSL Encrypted Payment</span>
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
+              <span>100% Secure Checkout</span>
+            </li>
+            <li>
+              <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
+              <span>Satisfaction Guaranteed</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
-  
-  <div class="d-flex justify-content-between mt-4">
-    <div>
-      <%= link_to products_path, class: "btn btn-outline-secondary" do %>
-        <i class="bi bi-arrow-left"></i> Continue Shopping
+<% else %>
+  <div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-cart-x display-1 text-muted mb-3" aria-hidden="true"></i>
+      <h2 class="h3 mb-3">Your Cart is Empty</h2>
+      <p class="text-muted mb-4">Looks like you haven't added any products to your cart yet.</p>
+      <%= link_to products_path, class: "btn btn-primary btn-lg" do %>
+        <i class="bi bi-shop me-1" aria-hidden="true"></i> Start Shopping
       <% end %>
     </div>
-    <div class="d-flex gap-2">
-      <%= link_to "View Tax Invoice", preview_invoice_checkouts_path, class: "btn btn-info" %>
-      <%= link_to "Proceed to Checkout", new_checkout_path, class: "btn btn-success" %>
-    </div>
-  </div>
-<% else %>
-  <div class="alert alert-info">
-    <p>Your cart is empty.</p>
-    <%= link_to "Browse Products", products_path, class: "btn btn-primary" %>
   </div>
 <% end %>

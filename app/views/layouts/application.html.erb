@@ -1,126 +1,352 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Knightly</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Knightly - Premium medieval-themed products">
+    <title>Knightly - Premium Medieval Products</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", media: "all", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #8e44ad;
+        --accent-color: #d4af37;
+        --light-color: #ecf0f1;
+        --dark-color: #1a1a1a;
+        --success-color: #27ae60;
+        --danger-color: #c0392b;
+        --info-color: #3498db;
+      }
+      
+      body {
+        font-family: 'Lato', sans-serif;
+        color: var(--dark-color);
+        background-color: #f8f9fa;
+      }
+      
+      h1, h2, h3, h4, h5, h6, .navbar-brand {
+        font-family: 'Cinzel', serif;
+        font-weight: 600;
+      }
+      
+      .navbar {
+        background-color: var(--primary-color) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .navbar-brand {
+        font-size: 1.8rem;
+        color: var(--accent-color) !important;
+      }
+      
+      .nav-link {
+        color: var(--light-color) !important;
+        font-weight: 400;
+        transition: color 0.3s ease;
+      }
+      
+      .nav-link:hover {
+        color: var(--accent-color) !important;
+      }
+      
+      .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+      
+      .btn-primary:hover {
+        background-color: #1a2530;
+        border-color: #1a2530;
+      }
+      
+      .btn-success {
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+      }
+      
+      .btn-info {
+        background-color: var(--info-color);
+        border-color: var(--info-color);
+        color: white;
+      }
+      
+      .card {
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: none;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+      
+      .card-header {
+        font-weight: 600;
+        border-bottom: 2px solid var(--accent-color);
+      }
+      
+      footer {
+        background-color: var(--primary-color);
+        color: var(--light-color);
+        padding: 2rem 0;
+        margin-top: 3rem;
+      }
+      
+      .page-title {
+        border-bottom: 3px solid var(--accent-color);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+      }
+      
+      .badge {
+        font-weight: 400;
+      }
+      
+      .toast {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+      
+      .toast-header {
+        background-color: var(--primary-color) !important;
+      }
+    </style>
   </head>
 
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <%= link_to "Knightly", root_path, class: "navbar-brand" %>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <%= link_to "Home", root_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "Products", products_path, class: "nav-link" %>
-            </li>
-
-            <% if customer_signed_in? %>
-            <li class="nav-item">
-              <%= link_to "My Profile", profile_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "My Orders", orders_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= button_to "Logout", destroy_customer_session_path,
-                    method: :delete,
-                    data: { confirm: "Are you sure?" },
-                    class: "nav-link btn btn-link" %>
-            </li>
-            <% else %>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+          <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
+            <i class="bi bi-shield-fill me-2" aria-hidden="true"></i> Knightly
+          <% end %>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <%= link_to "Login", new_customer_session_path, class: "nav-link" %>
-              </li>
-              <li class="nav-item">
-                <%= link_to "Sign Up", new_customer_registration_path, class: "nav-link" %>
-              </li>
-            <% end %>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle position-relative" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Cart
-                <% cart_count = session[:cart].present? ? session[:cart].values.sum : 0 %>
-                <% if cart_count > 0 %>
-                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    <%= cart_count %>
-                  </span>
+                <%= link_to root_path, class: "nav-link #{'active' if current_page?(root_path)}" do %>
+                  <i class="bi bi-house-door me-1" aria-hidden="true"></i> Home
                 <% end %>
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="cartDropdown">
-                <li><%= link_to "View Cart", cart_path, class: "dropdown-item" %></li>
-                <li><%= link_to "Tax Invoice", preview_invoice_checkouts_path, class: "dropdown-item" %></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><%= link_to "Checkout", new_checkout_path, class: "dropdown-item" %></li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <%= link_to "About", about_path, class: "nav-link" %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "Contact", contact_path, class: "nav-link" %>
-            </li>
-          </ul>
+              </li>
+              <li class="nav-item">
+                <%= link_to products_path, class: "nav-link #{'active' if current_page?(products_path)}" do %>
+                  <i class="bi bi-grid me-1" aria-hidden="true"></i> Products
+                <% end %>
+              </li>
+              <li class="nav-item">
+                <%= link_to about_path, class: "nav-link #{'active' if current_page?(about_path)}" do %>
+                  <i class="bi bi-info-circle me-1" aria-hidden="true"></i> About
+                <% end %>
+              </li>
+              <li class="nav-item">
+                <%= link_to contact_path, class: "nav-link #{'active' if current_page?(contact_path)}" do %>
+                  <i class="bi bi-envelope me-1" aria-hidden="true"></i> Contact
+                <% end %>
+              </li>
+            </ul>
+            
+            <ul class="navbar-nav">
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle position-relative" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-cart3 me-1" aria-hidden="true"></i> Cart
+                  <% cart_count = session[:cart].present? ? session[:cart].values.sum : 0 %>
+                  <% if cart_count > 0 %>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      <%= cart_count %>
+                      <span class="visually-hidden">items in cart</span>
+                    </span>
+                  <% end %>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown">
+                  <li><%= link_to cart_path, class: "dropdown-item" do %>
+                    <i class="bi bi-cart3 me-1" aria-hidden="true"></i> View Cart
+                  <% end %></li>
+                  <li><%= link_to preview_invoice_checkouts_path, class: "dropdown-item" do %>
+                    <i class="bi bi-receipt me-1" aria-hidden="true"></i> Tax Invoice
+                  <% end %></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><%= link_to new_checkout_path, class: "dropdown-item" do %>
+                    <i class="bi bi-credit-card me-1" aria-hidden="true"></i> Checkout
+                  <% end %></li>
+                </ul>
+              </li>
+              
+              <% if customer_signed_in? %>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle me-1" aria-hidden="true"></i> My Account
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><%= link_to profile_path, class: "dropdown-item" do %>
+                      <i class="bi bi-person me-1" aria-hidden="true"></i> My Profile
+                    <% end %></li>
+                    <li><%= link_to orders_path, class: "dropdown-item" do %>
+                      <i class="bi bi-bag me-1" aria-hidden="true"></i> My Orders
+                    <% end %></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <%= button_to destroy_customer_session_path, method: :delete, class: "dropdown-item text-danger", form: { data: { turbo_confirm: "Are you sure you want to log out?" } } do %>
+                        <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i> Logout
+                      <% end %>
+                    </li>
+                  </ul>
+                </li>
+              <% else %>
+                <li class="nav-item">
+                  <%= link_to new_customer_session_path, class: "nav-link #{'active' if current_page?(new_customer_session_path)}" do %>
+                    <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i> Login
+                  <% end %>
+                </li>
+                <li class="nav-item">
+                  <%= link_to new_customer_registration_path, class: "nav-link #{'active' if current_page?(new_customer_registration_path)}" do %>
+                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Sign Up
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
 
-    <div class="container mt-4">
-      <% if notice %>
-        <div class="alert alert-success"><%= notice %></div>
-      <% end %>
-      <% if alert %>
-        <div class="alert alert-danger"><%= alert %></div>
-      <% end %>
-      
-      <% if flash[:cart_added] %>
-        <div class="toast-container position-fixed top-0 end-0 p-3">
-          <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-primary text-white">
-              <strong class="me-auto">Added to Cart</strong>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-              <p><strong><%= flash[:cart_added][:product_name] %></strong> has been added to your cart.</p>
-              <div class="mt-2 pt-2 border-top">
-                <%= link_to "View Cart", cart_path, class: "btn btn-sm btn-primary" %>
-                <%= link_to "Checkout", new_checkout_path, class: "btn btn-sm btn-success" %>
-                <%= link_to "View Tax Invoice", preview_invoice_checkouts_path, class: "btn btn-sm btn-info" %>
+    <main class="py-4">
+      <div class="container">
+        <% if notice %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= notice %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% end %>
+        <% if alert %>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= alert %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% end %>
+        
+        <% if flash[:cart_added] %>
+          <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header text-white">
+                <i class="bi bi-cart-check me-2" aria-hidden="true"></i>
+                <strong class="me-auto">Added to Cart</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body">
+                <p><strong><%= flash[:cart_added][:product_name] %></strong> has been added to your cart.</p>
+                <div class="mt-2 pt-2 border-top d-flex gap-2">
+                  <%= link_to cart_path, class: "btn btn-sm btn-primary" do %>
+                    <i class="bi bi-cart3 me-1" aria-hidden="true"></i> View Cart
+                  <% end %>
+                  <%= link_to new_checkout_path, class: "btn btn-sm btn-success" do %>
+                    <i class="bi bi-credit-card me-1" aria-hidden="true"></i> Checkout
+                  <% end %>
+                </div>
               </div>
             </div>
           </div>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              var toast = document.querySelector('.toast');
+              var closeButton = toast.querySelector('.btn-close');
+              
+              // Auto-hide the toast after 5 seconds
+              setTimeout(function() {
+                toast.classList.remove('show');
+              }, 5000);
+              
+              // Close button functionality
+              closeButton.addEventListener('click', function() {
+                toast.classList.remove('show');
+              });
+            });
+          </script>
+        <% end %>
+        
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer class="footer mt-auto py-4">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 mb-4 mb-md-0">
+            <h5 class="text-uppercase mb-3" style="color: var(--accent-color);">Knightly</h5>
+            <p>Premium medieval-themed products for enthusiasts, collectors, and history lovers.</p>
+            <div class="d-flex gap-3 mt-3">
+              <a href="#" class="text-light" aria-label="Facebook">
+                <i class="bi bi-facebook fs-4" aria-hidden="true"></i>
+              </a>
+              <a href="#" class="text-light" aria-label="Twitter">
+                <i class="bi bi-twitter-x fs-4" aria-hidden="true"></i>
+              </a>
+              <a href="#" class="text-light" aria-label="Instagram">
+                <i class="bi bi-instagram fs-4" aria-hidden="true"></i>
+              </a>
+              <a href="#" class="text-light" aria-label="Pinterest">
+                <i class="bi bi-pinterest fs-4" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+          
+          <div class="col-md-2 mb-4 mb-md-0">
+            <h5 class="text-uppercase mb-3" style="color: var(--accent-color);">Shop</h5>
+            <ul class="list-unstyled">
+              <li class="mb-2"><%= link_to "All Products", products_path, class: "text-light text-decoration-none" %></li>
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">New Arrivals</a></li>
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">Best Sellers</a></li>
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">On Sale</a></li>
+            </ul>
+          </div>
+          
+          <div class="col-md-2 mb-4 mb-md-0">
+            <h5 class="text-uppercase mb-3" style="color: var(--accent-color);">Support</h5>
+            <ul class="list-unstyled">
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">Contact Us</a></li>
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">FAQs</a></li>
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">Shipping</a></li>
+              <li class="mb-2"><a href="#" class="text-light text-decoration-none">Returns</a></li>
+            </ul>
+          </div>
+          
+          <div class="col-md-4">
+            <h5 class="text-uppercase mb-3" style="color: var(--accent-color);">Newsletter</h5>
+            <p>Subscribe to receive updates, access to exclusive deals, and more.</p>
+            <form class="d-flex">
+              <input type="email" class="form-control me-2" placeholder="Your email" aria-label="Email for newsletter">
+              <button class="btn btn-outline-light" type="submit">Subscribe</button>
+            </form>
+          </div>
         </div>
         
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            var toast = document.querySelector('.toast');
-            var closeButton = toast.querySelector('.btn-close');
-            
-            // Auto-hide the toast after 5 seconds
-            setTimeout(function() {
-              toast.classList.remove('show');
-            }, 5000);
-            
-            // Close button functionality
-            closeButton.addEventListener('click', function() {
-              toast.classList.remove('show');
-            });
-          });
-        </script>
-      <% end %>
-      
-      <%= yield %>
-    </div>
+        <hr class="my-4 bg-light">
+        
+        <div class="row align-items-center">
+          <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+            <p class="mb-0">&copy; <%= Date.today.year %> Knightly. All rights reserved.</p>
+          </div>
+          <div class="col-md-6 text-center text-md-end">
+            <div class="d-flex justify-content-center justify-content-md-end gap-3">
+              <a href="#" class="text-light text-decoration-none">Privacy Policy</a>
+              <a href="#" class="text-light text-decoration-none">Terms of Service</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <!-- Include Bootstrap JS via CDN -->
     <%= javascript_include_tag "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js", integrity: "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p", crossorigin: "anonymous" %>

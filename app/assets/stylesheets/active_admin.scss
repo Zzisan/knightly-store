@@ -15,3 +15,50 @@
 // For example, to change the default status-tag color:
 //
 //   .status_tag { background: #6090DB; }
+
+// Dashboard styling
+.dashboard_stats {
+  margin: 10px 0;
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+    
+    li {
+      margin-bottom: 10px;
+      font-size: 1.1em;
+      
+      strong {
+        font-weight: bold;
+        color: #5E6469;
+      }
+    }
+  }
+}
+
+.order_products {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  max-height: 150px;
+  overflow-y: auto;
+  
+  li {
+    margin-bottom: 5px;
+    padding: 3px 0;
+    border-bottom: 1px dotted #E8E8E8;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+// Status tag colors
+.status_tag {
+  &.pending { background: #FF9900; }
+  &.paid { background: #8DAA92; }
+  &.shipped { background: #6090DB; }
+  &.completed { background: #5E6469; }
+  &.cancelled { background: #CF2C1D; }
+}

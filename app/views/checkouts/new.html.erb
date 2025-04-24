@@ -6,7 +6,7 @@
 <% else %>
   <div class="row">
     <div class="col-md-8">
-      <%= form_with model: @order, url: checkouts_path, method: :post, local: true, data: { turbo: false } do |f| %>
+      <%= form_with model: @order, url: new_checkout_payment_path, method: :get, local: true, data: { turbo: false } do |f| %>
         <div class="card mb-4">
           <div class="card-header">
             <h3>Shipping Information</h3>
@@ -35,7 +35,7 @@
         </div>
         
         <div class="d-grid gap-2">
-          <%= f.submit "Place Order", class: "btn btn-primary btn-lg" %>
+          <%= f.submit "Continue to Payment", class: "btn btn-primary btn-lg" %>
           <div class="d-flex gap-2">
             <%= link_to "View Tax Invoice", preview_invoice_checkouts_path(province_id: params[:province_id]), class: "btn btn-info flex-grow-1" %>
             <%= link_to "Back to Cart", cart_path, class: "btn btn-outline-secondary flex-grow-1" %>

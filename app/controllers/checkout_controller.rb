@@ -3,76 +3,47 @@ class CheckoutController < ApplicationController
 
   def new
     if session[:cart].blank? || session[:cart].empty?
-      redirect_to products_path, alert: "Your cart is empty."
-    else
-      @order = Order.new
+      redirect_to products_path, alert: "Your cart is empty." and return
     end
+    @order = Order.new
   end
 
   def create
-    cart = session[:cart] || {}
-    if cart.empty?
+    if session[:cart].blank? || session[:cart].empty?
       redirect_to products_path, alert: "Your cart is empty." and return
     end
 
-    # Calculate total order amount
     total = 0
-    cart.each do |product_id, quantity|
+    order_items = []
+
+    # Process each item in the session-based cart
+    session[:cart].each do |product_id, quantity|
       product = Product.find_by(id: product_id)
-      total += product.price * quantity if product
+      next unless product
+      subtotal = product.price * quantity
+      total += subtotal
+      order_items << { product_id: product.id, quantity: quantity, price_at_order: product.price }
     end
 
     @order = current_customer.orders.build(order_params.merge(
       order_date: Time.current,
       total_amount: total,
-      status: "pending"  # Initially pending until payment is confirmed
+      status: "pending"  # Order starts as pending; you'll update it after payment confirmation.
     ))
 
     if @order.save
-      # Create order items for each product in the cart
-      cart.each do |product_id, quantity|
-        product = Product.find_by(id: product_id)
-        if product
-          @order.order_items.create(
-            product: product,
-            quantity: quantity,
-            price_at_order: product.price
-          )
-        end
+      # Create associated order_items records
+      order_items.each do |item_data|
+        @order.order_items.create(item_data)
       end
 
-      # Create a Stripe Checkout session for this order
-      session_stripe = Stripe::Checkout::Session.create(
-        payment_method_types: ['card'],
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: "Order ##{@order.id}",
-            },
-            unit_amount: (total * 100).to_i,  # Convert total to cents
-          },
-          quantity: 1,
-        }],
-        mode: 'payment',
-        success_url: order_url(@order),  # On success, redirect to order confirmation page
-        cancel_url: new_checkout_url,      # On cancel, go back to the checkout page
-      )
-
-      # Store the Stripe session ID in the order (optional)
-      @order.update(stripe_session_id: session_stripe.id) if @order.respond_to?(:stripe_session_id)
-
-      # Clear the cart after creating the order
+      # Clear the cart
       session[:cart] = {}
 
-      # Redirect to Stripe Checkout
-      redirect_to session_stripe.url, allow_other_host: true
+      redirect_to order_path(@order), notice: "Order placed successfully!"
     else
       render :new
     end
-  rescue Stripe::StripeError => e
-    # Handle any Stripe errors gracefully
-    redirect_to new_checkout_url, alert: e.message
   end
 
   private

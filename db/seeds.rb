@@ -1,88 +1,9 @@
 # db/seeds.rb
+# Simplified seed file with Faker data for medieval products
 
 require 'faker'
-require 'open-uri'
-require 'cgi'
-
-# Load specific seed files
-Dir[File.join(Rails.root, 'db', 'seeds', '*.rb')].sort.each do |seed|
-  puts "Loading seed file: #{File.basename(seed)}"
-  load seed
-end
-
-# ========= Custom Arrays: Base Names & Descriptions =========
-
-# Base names for each category
-SWORD_NAMES = [
-  "Sword", "Blade", "Sabre", "Rapier", "Broadsword"
-]
-
-ARMOUR_NAMES = [
-  "Armour", "Plate", "Mail", "Hauberk", "Breastplate"
-]
-
-SHIELD_NAMES = [
-  "Shield", "Buckler", "Aegis", "Defender", "Bulwark"
-]
-
-ACCESSORIES_NAMES = [
-  "Gauntlets", "Circlet", "Medallion", "Signet", "Brooch"
-]
-
-# Base descriptions for each category
-SWORD_DESCRIPTIONS = [
-  "Forged in ancient fires, this weapon gleams with magical brilliance.",
-  "A formidable blade known to vanquish even the strongest foes.",
-  "This sword carries the legend of a once-great knight."
-]
-
-ARMOUR_DESCRIPTIONS = [
-  "Intricately crafted to provide both unmatched protection and style.",
-  "Armour that has been passed down through generations of warriors.",
-  "Built to withstand the perils of battle, yet light on the shoulders."
-]
-
-SHIELD_DESCRIPTIONS = [
-  "A robust shield that stands as a bulwark against enemy strikes.",
-  "Adorned with symbols of valor, this shield inspires courage.",
-  "Tested in the heat of battle, offering formidable defence."
-]
-
-ACCESSORIES_DESCRIPTIONS = [
-  "An exquisite accessory, a mark of noble heritage.",
-  "Crafted with precision, offering both elegance and utility.",
-  "A treasured piece that carries a legacy of honor and tradition."
-]
-
-# ========= Additional Arrays: Prefixes and Suffixes =========
-
-# For Swords
-SWORD_PREFIXES = ["Ancient", "Mystic", "Dragon's", "Valiant", "Enchanted"]
-SWORD_SUFFIXES = ["of Power", "of Legends", "of Destiny", "of the Fallen", "of Eternal Flame"]
-
-# For Armour
-ARMOUR_PREFIXES = ["Sturdy", "Impenetrable", "Celestial", "Legendary", "Guardian"]
-ARMOUR_SUFFIXES = ["of Valor", "of Kings", "of Might", "of the Ancients", "of Fortitude"]
-
-# For Shields
-SHIELD_PREFIXES = ["Lionheart", "Ironclad", "Unyielding", "Fortified", "Brave"]
-SHIELD_SUFFIXES = ["Protector", "Defender", "Bastion", "Sentinel", "Guardian"]
-
-# For Accessories
-ACCESSORIES_PREFIXES = ["Noble", "Regal", "Ceremonial", "Eternal", "Enchanted"]
-ACCESSORIES_SUFFIXES = ["of Honor", "of Wisdom", "of the Realm", "of Power", "of Mystery"]
-
-# ========= Generic Fallback Arrays =========
-
-GENERIC_NAMES = ["Mystic Relic", "Ancient Artifact", "Legendary Item"]
-GENERIC_DESCRIPTIONS = [
-  "A mysterious item shrouded in legend.",
-  "An artifact with origins lost in the mists of time.",
-  "A prized possession of nobility and magic."
-]
 
 # ========= Clear Existing Data =========
-
 puts "Clearing existing data..."
 OrderItem.delete_all if defined?(OrderItem)
 Order.delete_all if defined?(Order)
@@ -90,89 +11,200 @@ Product.delete_all
 Category.delete_all
 
 # ========= Seeding Categories =========
-
 puts "Seeding Categories..."
 categories = {}
-["Swords", "Armour", "Shields", "Accessories"].each do |cat_name|
+[
+  "Swords", 
+  "Shields", 
+  "Axes", 
+  "Armor", 
+  "Helmets", 
+  "Daggers", 
+  "Accessories"
+].each do |cat_name|
   categories[cat_name] = Category.create!(
     name: cat_name,
     description: "Exquisite collection of #{cat_name.downcase} for noble warriors."
   )
 end
 
-# ========= Load Product Photos =========
+# ========= Category-specific content =========
+category_content = {
+  "Swords" => {
+    prefixes: ["Ancient", "Mystic", "Dragon's", "Valiant", "Enchanted", "Royal", "Knight's"],
+    base_names: ["Sword", "Blade", "Sabre", "Rapier", "Broadsword", "Longsword", "Claymore"],
+    suffixes: ["of Power", "of Legends", "of Destiny", "of the Fallen", "of Eternal Flame"],
+    descriptions: [
+      "Forged in ancient fires, this weapon gleams with magical brilliance.",
+      "A formidable blade known to vanquish even the strongest foes.",
+      "This sword carries the legend of a once-great knight.",
+      "Balanced and deadly, this blade has tasted the blood of many enemies."
+    ]
+  },
+  "Shields" => {
+    prefixes: ["Lionheart", "Ironclad", "Unyielding", "Fortified", "Brave", "Stalwart"],
+    base_names: ["Shield", "Buckler", "Aegis", "Defender", "Bulwark", "Kite Shield"],
+    suffixes: ["Protector", "Defender", "Bastion", "Sentinel", "Guardian"],
+    descriptions: [
+      "A robust shield that stands as a bulwark against enemy strikes.",
+      "Adorned with symbols of valor, this shield inspires courage.",
+      "Tested in the heat of battle, offering formidable defence.",
+      "This shield has turned aside countless blows in service to its bearer."
+    ]
+  },
+  "Axes" => {
+    prefixes: ["Brutal", "Mighty", "Berserker's", "Dwarven", "Battle-worn"],
+    base_names: ["Axe", "Battle Axe", "War Axe", "Hatchet", "Double-Axe", "Tomahawk"],
+    suffixes: ["of Rage", "of the Mountain", "of Splitting", "of Fury", "Cleaver"],
+    descriptions: [
+      "A heavy axe capable of cleaving through armor with ease.",
+      "This fearsome weapon strikes terror into the hearts of enemies.",
+      "Balanced for both throwing and close combat, this axe is versatile.",
+      "The blade of this axe never dulls, no matter how many foes it fells."
+    ]
+  },
+  "Armor" => {
+    prefixes: ["Sturdy", "Impenetrable", "Celestial", "Legendary", "Guardian", "Knight's"],
+    base_names: ["Armor", "Plate", "Mail", "Hauberk", "Breastplate", "Cuirass"],
+    suffixes: ["of Valor", "of Kings", "of Might", "of the Ancients", "of Fortitude"],
+    descriptions: [
+      "Intricately crafted to provide both unmatched protection and style.",
+      "Armor that has been passed down through generations of warriors.",
+      "Built to withstand the perils of battle, yet light on the shoulders.",
+      "The finest smiths in the realm labored for months to create this masterpiece."
+    ]
+  },
+  "Helmets" => {
+    prefixes: ["Visored", "Plated", "Commander's", "Royal", "Crusader's"],
+    base_names: ["Helmet", "Helm", "Greathelm", "Sallet", "Bascinet", "Armet"],
+    suffixes: ["of Sight", "of Protection", "of Command", "of the Vigilant", "of Focus"],
+    descriptions: [
+      "This helmet offers superior protection while maintaining visibility.",
+      "Adorned with the crest of a noble house, this helmet marks its wearer as elite.",
+      "The visor can be raised or lowered depending on the needs of battle.",
+      "Despite its sturdy construction, this helmet is surprisingly comfortable."
+    ]
+  },
+  "Daggers" => {
+    prefixes: ["Silent", "Assassin's", "Poisoned", "Ceremonial", "Jeweled"],
+    base_names: ["Dagger", "Dirk", "Stiletto", "Kris", "Rondel", "Misericorde"],
+    suffixes: ["of Shadows", "of Swiftness", "of the Serpent", "of Precision", "of Venom"],
+    descriptions: [
+      "A concealed weapon perfect for surprise attacks or self-defense.",
+      "The blade is etched with runes that seem to absorb light.",
+      "This dagger's balance makes it ideal for throwing or close combat.",
+      "Though small, this blade can find gaps in even the heaviest armor."
+    ]
+  },
+  "Accessories" => {
+    prefixes: ["Noble", "Regal", "Ceremonial", "Eternal", "Enchanted", "Blessed"],
+    base_names: ["Gauntlets", "Circlet", "Medallion", "Signet", "Brooch", "Amulet", "Ring"],
+    suffixes: ["of Honor", "of Wisdom", "of the Realm", "of Power", "of Mystery"],
+    descriptions: [
+      "An exquisite accessory, a mark of noble heritage.",
+      "Crafted with precision, offering both elegance and utility.",
+      "A treasured piece that carries a legacy of honor and tradition.",
+      "This item is said to bring good fortune to its bearer in times of need."
+    ]
+  }
+}
 
-photos = Dir.glob(Rails.root.join("app", "assets", "images", "product_photos", "*.{jpg,png}"))
-if photos.empty?
-  puts "No product photos found in app/assets/images/product_photos. Please add some images."
+# ========= Load Product Photos =========
+puts "Loading product photos from app/assets/images/product_photos..."
+product_photos_dir = Rails.root.join("app", "assets", "images", "product_photos")
+product_photos = Dir.glob(File.join(product_photos_dir, "*.{jpg,jpeg,png,avif}"))
+
+if product_photos.empty?
+  puts "No product photos found in app/assets/images/product_photos. Using placeholder images instead."
+  # Use placeholder.jpg as fallback
+  placeholder_path = Rails.root.join("app", "assets", "images", "placeholder.jpg")
+  product_photos = [placeholder_path] if File.exist?(placeholder_path)
 end
 
-# ========= Seeding Medieval Products =========
+puts "Found #{product_photos.size} product photos"
 
-puts "Seeding 100 Medieval Products..."
-100.times do |i|
-  # Randomly choose a category name and its object
-  chosen_category_name = ["Swords", "Armour", "Shields", "Accessories"].sample
-  category = categories[chosen_category_name]
-
-  # Compose product name based on category using additional arrays
-  final_name = case chosen_category_name
-               when "Swords"
-                 "#{SWORD_PREFIXES.sample} #{SWORD_NAMES.sample} #{SWORD_SUFFIXES.sample}"
-               when "Armour"
-                 "#{ARMOUR_PREFIXES.sample} #{ARMOUR_NAMES.sample} #{ARMOUR_SUFFIXES.sample}"
-               when "Shields"
-                 "#{SHIELD_PREFIXES.sample} #{SHIELD_NAMES.sample} #{SHIELD_SUFFIXES.sample}"
-               when "Accessories"
-                 "#{ACCESSORIES_PREFIXES.sample} #{ACCESSORIES_NAMES.sample} #{ACCESSORIES_SUFFIXES.sample}"
-               else
-                 GENERIC_NAMES.sample
-               end
-
-  final_description = case chosen_category_name
-                      when "Swords"
-                        "#{SWORD_DESCRIPTIONS.sample} #{Faker::Lorem.sentence(word_count: 5)}"
-                      when "Armour"
-                        "#{ARMOUR_DESCRIPTIONS.sample} #{Faker::Lorem.sentence(word_count: 5)}"
-                      when "Shields"
-                        "#{SHIELD_DESCRIPTIONS.sample} #{Faker::Lorem.sentence(word_count: 5)}"
-                      when "Accessories"
-                        "#{ACCESSORIES_DESCRIPTIONS.sample} #{Faker::Lorem.sentence(word_count: 5)}"
-                      else
-                        GENERIC_DESCRIPTIONS.sample
-                      end
-
-  # Randomly decide if this product is on sale and set a discount percentage accordingly
-  sale_status = [true, false].sample
-  discount = sale_status ? rand(5..30) : 0
-
+# ========= Seeding Products =========
+puts "Seeding 50 Medieval Products..."
+50.times do |i|
+  # Randomly choose a category
+  category_name = categories.keys.sample
+  category = categories[category_name]
+  content = category_content[category_name]
+  
+  # Generate product name
+  prefix = content[:prefixes].sample
+  base_name = content[:base_names].sample
+  suffix = content[:suffixes].sample
+  product_name = "#{prefix} #{base_name} #{suffix}"
+  
+  # Generate description
+  base_description = content[:descriptions].sample
+  additional_text = Faker::Lorem.sentence(word_count: 8)
+  product_description = "#{base_description} #{additional_text}"
+  
+  # Determine if product is on sale (30% chance)
+  on_sale = [true, false, false].sample
+  
+  # Set price and sale price
+  price = Faker::Commerce.price(range: 100.0..2000.0).round(2)
+  sale_price = nil
+  
+  if on_sale
+    discount = rand(10..40)
+    sale_price = (price * (100 - discount) / 100.0).round(2)
+  end
+  
+  # Create the product
   product = Product.create!(
-    name: final_name,
-    description: final_description,
-    price: Faker::Commerce.price(range: 100.0..2000.0),
+    name: product_name,
+    description: product_description,
+    price: price,
+    sale_price: sale_price,
     stock_quantity: Faker::Number.between(from: 1, to: 50),
     category: category,
-    on_sale: sale_status,
-    discount_percentage: discount
+    on_sale: on_sale
   )
-
-  # Attach a random image from your product_photos folder if available
-  if photos.any?
+  
+  # Select a random image from the product_photos directory
+  if product_photos.any?
     begin
-      file = File.open(photos.sample)
-      product.image.attach(io: file, filename: File.basename(file), content_type: "image/jpeg")
+      # Choose a random image
+      image_path = product_photos.sample
+      
+      # Open the file and prepare for attachment
+      file = File.open(image_path)
+      filename = File.basename(image_path)
+      
+      # Determine content type based on file extension
+      content_type = case File.extname(filename).downcase
+                     when '.jpg', '.jpeg' then 'image/jpeg'
+                     when '.png' then 'image/png'
+                     when '.avif' then 'image/avif'
+                     else 'image/jpeg'
+                     end
+      
+      # Attach the image to the product
+      product.image.attach(
+        io: file,
+        filename: filename,
+        content_type: content_type
+      )
+      
+      puts "Created product #{i+1}: #{product.name} in category #{category.name} with image: #{filename}"
+      
+      # Close the file
       file.close
-      puts "Created product #{i+1}: #{product.name} in category #{category.name} with an image."
     rescue => e
-      puts "Created product #{i+1}: #{product.name} in category #{category.name} but failed to attach image: #{e.message}"
+      puts "Error attaching image to product #{product.name}: #{e.message}"
     end
   else
-    puts "Created product #{i+1}: #{product.name} in category #{category.name} (no image attached)"
+    puts "Created product #{i+1}: #{product.name} in category #{category.name} (no images available)"
   end
 end
 
 puts "Seeding complete: #{Category.count} Categories, #{Product.count} Products created."
-# ========= STEP 6: SEED PROVINCES =========
+
+# ========= Seed Provinces =========
 puts "Seeding Provinces..."
 Province.destroy_all
 [

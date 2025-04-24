@@ -1,32 +1,80 @@
-<h1>Order Confirmation</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title mb-0">Order Confirmation</h1>
+  <div>
+    <button class="btn btn-outline-primary" onclick="window.print()">
+      <i class="bi bi-printer me-1" aria-hidden="true"></i> Print Receipt
+    </button>
+  </div>
+</div>
+
+<div class="alert alert-success mb-4">
+  <div class="d-flex">
+    <div class="me-3">
+      <i class="bi bi-check-circle-fill display-6" aria-hidden="true"></i>
+    </div>
+    <div>
+      <h2 class="h4 mb-1">Thank You for Your Order!</h2>
+      <p class="mb-0">Your order has been received and is now being processed. You will receive a confirmation email shortly.</p>
+    </div>
+  </div>
+</div>
 
 <div class="row">
-  <div class="col-md-8">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h2>Order Details</h2>
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header py-3">
+        <h2 class="h5 mb-0">
+          <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Order Details
+        </h2>
       </div>
       <div class="card-body">
-        <p><strong>Order ID:</strong> <%= @order.id %></p>
-        <p><strong>Order Date:</strong> <%= @order.order_date.strftime("%B %d, %Y %I:%M %p") %></p>
-        <p><strong>Status:</strong> <%= @order.status.capitalize %></p>
-        <p><strong>Shipping Address:</strong> <%= @order.shipping_address %></p>
+        <div class="row">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-3">
+                <span class="text-muted d-block mb-1">Order Number</span>
+                <span class="fw-bold">#<%= @order.id %></span>
+              </li>
+              <li class="mb-3">
+                <span class="text-muted d-block mb-1">Order Date</span>
+                <span class="fw-bold"><%= @order.order_date.strftime("%B %d, %Y %I:%M %p") %></span>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-3">
+                <span class="text-muted d-block mb-1">Status</span>
+                <% status_class = @order.status == Order::STATUS_COMPLETED ? "bg-success" : (@order.status == Order::STATUS_PENDING ? "bg-warning" : "bg-secondary") %>
+                <span class="badge <%= status_class %> p-2"><%= @order.status.capitalize %></span>
+              </li>
+              <li>
+                <span class="text-muted d-block mb-1">Shipping Address</span>
+                <address class="mb-0">
+                  <%= @order.shipping_address.gsub(/\n/, '<br>').html_safe %>
+                </address>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-header">
-        <h2>Order Items</h2>
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header py-3">
+        <h2 class="h5 mb-0">
+          <i class="bi bi-box me-2" aria-hidden="true"></i>Order Items
+        </h2>
       </div>
-      <div class="card-body">
+      <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table">
-            <thead>
+          <table class="table mb-0">
+            <thead class="table-light">
               <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Subtotal</th>
+                <th scope="col" class="ps-4">Product</th>
+                <th scope="col" class="text-center">Quantity</th>
+                <th scope="col" class="text-end">Price</th>
+                <th scope="col" class="text-end pe-4">Subtotal</th>
               </tr>
             </thead>
             <tbody>
@@ -35,10 +83,69 @@
                 <% item_subtotal = item.price_at_order * item.quantity %>
                 <% subtotal += item_subtotal %>
                 <tr>
-                  <td><%= item.product.name %></td>
-                  <td><%= item.quantity %></td>
-                  <td><%= number_to_currency(item.price_at_order) %></td>
-                  <td><%= number_to_currency(item_subtotal) %></td>
+                  <td class="ps-4">
+                    <% product_name = item.product_name.present? ? item.product_name : (item.product.present? ? item.product.name : "Product no longer available") %>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#productModal<%= item.id %>" class="text-decoration-none">
+                      <div class="d-flex align-items-center">
+                        <% if item.product.present? && item.product.image.attached? %>
+                          <%= image_tag url_for(item.product.image), class: "rounded me-3", style: "width: 50px; height: 50px; object-fit: cover;" %>
+                        <% else %>
+                          <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-box text-muted" aria-hidden="true"></i>
+                          </div>
+                        <% end %>
+                        <div>
+                          <span class="fw-bold"><%= product_name %></span>
+                        </div>
+                      </div>
+                    </a>
+                    
+                    <!-- Product Modal -->
+                    <div class="modal fade" id="productModal<%= item.id %>" tabindex="-1" aria-labelledby="productModalLabel<%= item.id %>" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="productModalLabel<%= item.id %>"><%= product_name %></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <% if item.product.present? && item.product.image.attached? %>
+                              <div class="text-center mb-3">
+                                <%= image_tag url_for(item.product.image), class: "img-fluid rounded", style: "max-height: 200px;" %>
+                              </div>
+                            <% end %>
+                            
+                            <% if item.product_description.present? %>
+                              <p><%= item.product_description %></p>
+                            <% elsif item.product.present? && item.product.description.present? %>
+                              <p><%= item.product.description %></p>
+                            <% else %>
+                              <p>No description available.</p>
+                            <% end %>
+                            
+                            <div class="alert alert-info mt-3">
+                              <small>
+                                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                                <strong>Note:</strong> This shows the product details as they were at the time of purchase.
+                                The current product may have changed.
+                              </small>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <% if item.product.present? %>
+                              <%= link_to product_path(item.product), class: "btn btn-primary" do %>
+                                <i class="bi bi-eye me-1" aria-hidden="true"></i> View Current Product
+                              <% end %>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-center"><%= item.quantity %></td>
+                  <td class="text-end"><%= number_to_currency(item.price_at_order) %></td>
+                  <td class="text-end pe-4 fw-bold"><%= number_to_currency(item_subtotal) %></td>
                 </tr>
               <% end %>
             </tbody>
@@ -47,87 +154,198 @@
       </div>
     </div>
     
-    <div class="d-grid gap-2">
-      <%= link_to "Continue Shopping", products_path, class: "btn btn-primary" %>
-      <%= link_to "View All Orders", orders_path, class: "btn btn-outline-secondary" %>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <% if @order.status == Order::STATUS_PENDING %>
+        <%= link_to new_checkout_payment_path(shipping_address: @order.shipping_address, province_id: current_customer.province_id), class: "btn btn-success" do %>
+          <i class="bi bi-credit-card me-1" aria-hidden="true"></i> Pay Now
+        <% end %>
+      <% end %>
+      
+      <%= link_to products_path, class: "btn btn-primary" do %>
+        <i class="bi bi-shop me-1" aria-hidden="true"></i> Continue Shopping
+      <% end %>
+      
+      <%= link_to orders_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-list-ul me-1" aria-hidden="true"></i> View All Orders
+      <% end %>
     </div>
   </div>
   
-  <div class="col-md-4">
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        <h2 class="mb-0">Order Summary</h2>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-primary text-white py-3">
+        <h2 class="h5 mb-0">
+          <i class="bi bi-receipt me-2" aria-hidden="true"></i>Order Summary
+        </h2>
       </div>
       <div class="card-body">
-        <div class="d-flex justify-content-between mb-2">
-          <div>Subtotal:</div>
-          <div><%= number_to_currency(@order.total_amount - (@order.tax_total || 0)) %></div>
+        <div class="d-flex justify-content-between mb-3">
+          <span>Subtotal</span>
+          <span class="fw-bold"><%= number_to_currency(@order.total_amount - (@order.tax_total || 0)) %></span>
+        </div>
+        
+        <% if @order.tax_total && @order.tax_total > 0 %>
+          <div class="d-flex justify-content-between mb-3">
+            <span>Tax</span>
+            <span class="fw-bold"><%= number_to_currency(@order.tax_total) %></span>
+          </div>
+        <% end %>
+        
+        <hr>
+        
+        <div class="d-flex justify-content-between mb-0">
+          <span class="fw-bold">Total</span>
+          <span class="fw-bold fs-4"><%= number_to_currency(@order.total_amount) %></span>
         </div>
       </div>
     </div>
     
-    <div class="card mb-4">
-      <div class="card-header bg-info text-white">
-        <h2 class="mb-0">Tax Invoice</h2>
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-info text-white py-3">
+        <h2 class="h5 mb-0">
+          <i class="bi bi-receipt-cutoff me-2" aria-hidden="true"></i>Tax Invoice
+        </h2>
       </div>
       <div class="card-body">
+        <% if @order.province_name.present? %>
+          <div class="mb-3">
+            <span class="text-muted d-block mb-1">Province</span>
+            <span class="fw-bold"><%= @order.province_name %></span>
+          </div>
+        <% end %>
+        
         <div class="table-responsive">
           <table class="table table-sm">
-            <thead>
+            <thead class="table-light">
               <tr>
-                <th>Tax Type</th>
-                <th>Amount</th>
+                <th scope="col">Tax Type</th>
+                <th scope="col" class="text-center">Rate</th>
+                <th scope="col" class="text-end">Amount</th>
               </tr>
             </thead>
             <tbody>
               <% if @order.gst_amount && @order.gst_amount > 0 %>
                 <tr>
                   <td>GST</td>
-                  <td><%= number_to_currency(@order.gst_amount) %></td>
+                  <td class="text-center"><%= number_to_percentage(@order.province_gst_rate * 100, precision: 2) %></td>
+                  <td class="text-end"><%= number_to_currency(@order.gst_amount) %></td>
                 </tr>
               <% end %>
               
               <% if @order.pst_amount && @order.pst_amount > 0 %>
                 <tr>
                   <td>PST</td>
-                  <td><%= number_to_currency(@order.pst_amount) %></td>
+                  <td class="text-center"><%= number_to_percentage(@order.province_pst_rate * 100, precision: 2) %></td>
+                  <td class="text-end"><%= number_to_currency(@order.pst_amount) %></td>
                 </tr>
               <% end %>
               
               <% if @order.hst_amount && @order.hst_amount > 0 %>
                 <tr>
                   <td>HST</td>
-                  <td><%= number_to_currency(@order.hst_amount) %></td>
+                  <td class="text-center"><%= number_to_percentage(@order.province_hst_rate * 100, precision: 2) %></td>
+                  <td class="text-end"><%= number_to_currency(@order.hst_amount) %></td>
                 </tr>
               <% end %>
               
               <tr class="table-active">
-                <td><strong>Total Tax:</strong></td>
-                <td><strong><%= number_to_currency(@order.tax_total || 0) %></strong></td>
+                <td colspan="2" class="fw-bold">Total Tax:</td>
+                <td class="text-end fw-bold"><%= number_to_currency(@order.tax_total || 0) %></td>
               </tr>
             </tbody>
           </table>
         </div>
         
-        <div class="alert alert-info mt-3">
-          <small>
-            <strong>Note:</strong> This is your official tax invoice for this purchase.
-            Please keep it for your records.
-          </small>
+        <div class="alert alert-info mt-3 mb-0">
+          <div class="d-flex">
+            <div class="me-2">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+            </div>
+            <div>
+              <small>
+                This is your official tax invoice for this purchase. Please keep it for your records.
+              </small>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     
-    <div class="card">
-      <div class="card-header bg-success text-white">
-        <h2 class="mb-0">Grand Total</h2>
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-success text-white py-3">
+        <h2 class="h5 mb-0">
+          <i class="bi bi-truck me-2" aria-hidden="true"></i>Shipping Information
+        </h2>
       </div>
       <div class="card-body">
-        <div class="d-flex justify-content-between mb-2">
-          <div><strong>Total:</strong></div>
-          <div><strong><%= number_to_currency(@order.total_amount) %></strong></div>
+        <p class="mb-3">Your order will be processed and shipped within 1-2 business days.</p>
+        
+        <div class="d-flex align-items-center mb-3">
+          <div class="me-3 text-success">
+            <i class="bi bi-box-seam fs-3" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="h6 mb-1">Standard Shipping</h3>
+            <p class="mb-0 small text-muted">Estimated delivery: 3-5 business days</p>
+          </div>
+        </div>
+        
+        <div class="alert alert-light mb-0">
+          <div class="d-flex">
+            <div class="me-2">
+              <i class="bi bi-envelope" aria-hidden="true"></i>
+            </div>
+            <div>
+              <small>
+                You will receive shipping confirmation and tracking information via email once your order ships.
+              </small>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<style media="print">
+  @page {
+    size: auto;
+    margin: 20mm;
+  }
+  
+  body {
+    background-color: white !important;
+  }
+  
+  .navbar, .footer, .btn, button {
+    display: none !important;
+  }
+  
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+  
+  .card-header {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+  }
+  
+  .alert-success {
+    border: 1px solid #d1e7dd !important;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+  }
+  
+  .alert-info {
+    border: 1px solid #cff4fc !important;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+  }
+  
+  .badge {
+    border: 1px solid #212529 !important;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+  }
+</style>

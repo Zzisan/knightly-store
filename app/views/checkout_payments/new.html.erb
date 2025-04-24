@@ -1,0 +1,148 @@
+<h1>Complete Your Purchase</h1>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>Payment Information</h3>
+      </div>
+      <div class="card-body">
+        <%= form_with url: checkout_payments_path, method: :post, local: true, data: { turbo: false }, id: "payment-form" do |f| %>
+          <%= f.hidden_field :province_id, value: @selected_province&.id %>
+          <%= f.hidden_field :shipping_address, value: session[:checkout_info].present? ? session[:checkout_info][:shipping_address] : params[:order][:shipping_address] %>
+          <%= f.hidden_field :use_for_profile, value: session[:checkout_info].present? ? session[:checkout_info][:use_for_profile] : params[:use_for_profile] %>
+          
+          <div class="alert alert-success mb-4">
+            <h5><strong>Test Mode Active</strong></h5>
+            <p>This checkout is in test mode. We're using Stripe's test token <code>tok_visa</code> which simulates a successful payment.</p>
+            <p>In a real application, you would enter your actual card details here.</p>
+          </div>
+          
+          <div class="mb-3">
+            <%= f.label :name_on_card, "Cardholder Name", class: "form-label" %>
+            <%= f.text_field :name_on_card, class: "form-control", value: "Test User", readonly: true %>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Card Information</label>
+            <input type="text" class="form-control" value="Visa •••• 4242" readonly>
+            <div class="form-text">Test card: 4242 4242 4242 4242 | Exp: 12/<%= Date.today.year + 1 %> | CVV: 123</div>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" id="submit-button">
+              Complete Purchase
+            </button>
+            <%= link_to "Back to Checkout", new_checkout_path, class: "btn btn-outline-secondary" %>
+          </div>
+          
+          <!-- Hidden fields for Stripe -->
+          <%= f.hidden_field :payment_method_id, id: "payment_method_id" %>
+          <%= f.hidden_field :card_number %>
+          <%= f.hidden_field :expiry_month %>
+          <%= f.hidden_field :expiry_year %>
+          <%= f.hidden_field :cvv %>
+        <% end %>
+        
+
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Order Summary</h3>
+      </div>
+      <div class="card-body">
+        <div class="order-items mb-3">
+          <% @cart_items.each do |item| %>
+            <div class="d-flex justify-content-between mb-2">
+              <div>
+                <strong><%= item[:product].name %></strong> 
+                <small class="text-muted">x<%= item[:quantity] %></small>
+              </div>
+              <div><%= number_to_currency(item[:subtotal]) %></div>
+            </div>
+          <% end %>
+        </div>
+        
+        <hr>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div>Subtotal:</div>
+          <div><%= number_to_currency(@subtotal) %></div>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div>Tax:</div>
+          <div><%= number_to_currency(@tax_total) %></div>
+        </div>
+        
+        <hr>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div><strong>Total Amount:</strong></div>
+          <div><strong><%= number_to_currency(@subtotal + @tax_total) %></strong></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header bg-info text-white">
+        <h3 class="mb-0">Shipping Information</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Address:</strong><br>
+        <% if session[:checkout_info][:shipping_address].present? %>
+          <%= session[:checkout_info][:shipping_address].to_s.gsub("\n", "<br>").html_safe %>
+        <% else %>
+          No address provided
+        <% end %>
+        </p>
+        
+        <% if @selected_province %>
+          <p><strong>Province:</strong> <%= @selected_province.name %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Simple form submission script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    
+    form.addEventListener('submit', function(event) {
+      // Disable the submit button to prevent repeated clicks
+      submitButton.disabled = true;
+      submitButton.textContent = 'Processing...';
+      
+      // If card number is just "4242", expand it to the full test card number
+      const cardNumberField = document.getElementById('card_number');
+      if (cardNumberField.value === "4242") {
+        cardNumberField.value = "4242424242424242";
+      }
+      
+      // If CVV is empty, set a default
+      const cvvField = document.getElementById('cvv');
+      if (!cvvField.value) {
+        cvvField.value = "123";
+      }
+      
+      // If expiry date is not selected, set defaults
+      const expiryMonthField = document.getElementById('expiry_month');
+      const expiryYearField = document.getElementById('expiry_year');
+      
+      if (!expiryMonthField.value) {
+        expiryMonthField.value = "12";
+      }
+      
+      if (!expiryYearField.value) {
+        expiryYearField.value = (new Date().getFullYear() + 1).toString();
+      }
+    });
+  });
+</script>

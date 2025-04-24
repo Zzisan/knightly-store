@@ -1,0 +1,58 @@
+<h1>Edit Your Profile</h1>
+
+<%= form_with(model: @customer, url: profile_path, method: :patch, local: true) do |f| %>
+  <% if @customer.errors.any? %>
+    <div class="alert alert-danger">
+      <h2><%= pluralize(@customer.errors.count, "error") %> prohibited this profile from being saved:</h2>
+      <ul>
+        <% @customer.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2>Personal Information</h2>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <%= f.label :first_name, class: "form-label" %>
+        <%= f.text_field :first_name, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :last_name, class: "form-label" %>
+        <%= f.text_field :last_name, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :phone, class: "form-label" %>
+        <%= f.telephone_field :phone, class: "form-control" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2>Address Information</h2>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <%= f.label :address, "Street Address", class: "form-label" %>
+        <%= f.text_field :address, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :province_id, "Province", class: "form-label" %>
+        <%= f.collection_select :province_id, @provinces, :id, :name, { include_blank: "Select a province" }, { class: "form-select" } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= f.submit "Update Profile", class: "btn btn-primary" %>
+    <%= link_to "Cancel", profile_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

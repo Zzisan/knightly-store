@@ -1,0 +1,179 @@
+<h1>Payment for Order #<%= @order.id %></h1>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>Payment Information</h3>
+      </div>
+      <div class="card-body">
+        <%= form_with url: order_payments_path(@order), method: :post, local: true, data: { turbo: false }, id: "payment-form" do |f| %>
+          <div class="mb-3">
+            <%= f.label :name_on_card, "Name on Card", class: "form-label" %>
+            <%= f.text_field :name_on_card, class: "form-control", required: true %>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Card Information</label>
+            <div id="card-element" class="form-control" style="height: 2.5em; padding-top: 0.5em;">
+              <!-- Stripe Elements will be inserted here -->
+            </div>
+            <div id="card-errors" class="text-danger mt-2" role="alert"></div>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" id="submit-button">
+              Process Payment
+            </button>
+            <%= link_to "Cancel", order_path(@order), class: "btn btn-outline-secondary" %>
+          </div>
+          
+          <!-- Hidden fields for Stripe -->
+          <%= f.hidden_field :payment_method_id, id: "payment_method_id" %>
+          <%= f.hidden_field :card_number %>
+          <%= f.hidden_field :expiry_month %>
+          <%= f.hidden_field :expiry_year %>
+          <%= f.hidden_field :cvv %>
+        <% end %>
+        
+        <div class="alert alert-info mt-4">
+          <h5>Test Card Information</h5>
+          <p>Use these test cards to simulate different payment scenarios:</p>
+          <ul>
+            <li><strong>Success:</strong> 4242 4242 4242 4242</li>
+            <li><strong>Decline:</strong> 4000 0000 0000 0002</li>
+          </ul>
+          <p>Use any future expiration date, any 3-digit CVC, and any postal code.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Order Summary</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Order Date:</strong> <%= @order.order_date.strftime("%B %d, %Y") %></p>
+        
+        <div class="order-items mb-3">
+          <% @order.order_items.each do |item| %>
+            <div class="d-flex justify-content-between mb-2">
+              <div>
+                <strong><%= item.product.name %></strong> 
+                <small class="text-muted">x<%= item.quantity %></small>
+              </div>
+              <div><%= number_to_currency(item.price_at_order * item.quantity) %></div>
+            </div>
+          <% end %>
+        </div>
+        
+        <hr>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div>Subtotal:</div>
+          <div><%= number_to_currency(@order.total_amount - (@order.tax_total || 0)) %></div>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div>Tax:</div>
+          <div><%= number_to_currency(@order.tax_total || 0) %></div>
+        </div>
+        
+        <hr>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <div><strong>Total Amount:</strong></div>
+          <div><strong><%= number_to_currency(@order.total_amount) %></strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stripe JavaScript -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Stripe
+    const stripe = Stripe('<%= Rails.configuration.stripe[:publishable_key] %>');
+    const elements = stripe.elements();
+    
+    // Create card element
+    const cardElement = elements.create('card', {
+      style: {
+        base: {
+          fontSize: '16px',
+          color: '#32325d',
+          fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+          fontSmoothing: 'antialiased',
+          '::placeholder': {
+            color: '#aab7c4'
+          }
+        },
+        invalid: {
+          color: '#fa755a',
+          iconColor: '#fa755a'
+        }
+      }
+    });
+    
+    // Mount the card element
+    cardElement.mount('#card-element');
+    
+    // Handle validation errors
+    cardElement.addEventListener('change', function(event) {
+      const displayError = document.getElementById('card-errors');
+      if (event.error) {
+        displayError.textContent = event.error.message;
+      } else {
+        displayError.textContent = '';
+      }
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      // Disable the submit button to prevent repeated clicks
+      submitButton.disabled = true;
+      submitButton.textContent = 'Processing...';
+      
+      const nameOnCard = document.getElementById('name_on_card').value;
+      
+      // Create a payment method
+      stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+        billing_details: {
+          name: nameOnCard
+        }
+      }).then(function(result) {
+        if (result.error) {
+          // Show error to customer
+          const errorElement = document.getElementById('card-errors');
+          errorElement.textContent = result.error.message;
+          submitButton.disabled = false;
+          submitButton.textContent = 'Process Payment';
+        } else {
+          // Get the card details from the payment method
+          const cardDetails = result.paymentMethod.card;
+          
+          // Set the hidden fields
+          document.getElementById('payment_method_id').value = result.paymentMethod.id;
+          document.getElementById('card_number').value = '4242' + cardDetails.last4; // Fake the full number
+          document.getElementById('expiry_month').value = cardDetails.exp_month;
+          document.getElementById('expiry_year').value = cardDetails.exp_year;
+          document.getElementById('cvv').value = '123'; // Fake CVV
+          
+          // Submit the form
+          form.submit();
+        }
+      });
+    });
+  });
+</script>

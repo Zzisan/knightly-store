@@ -25,12 +25,19 @@ Rails.application.routes.draw do
       get 'preview_invoice'
     end
   end
+  
+  # Checkout with payment in one step
+  resources :checkout_payments, only: [:new, :create]
 
   resources :orders, only: [:index, :show]
   
   # Static pages routes:
   get 'about', to: 'pages#show', defaults: { slug: 'about' }, as: :about
   get 'contact', to: 'pages#show', defaults: { slug: 'contact' }, as: :contact
+  
+  # Payment webhooks
+  post "webhooks/payment_confirmation", to: "webhooks#payment_confirmation"
+  post "webhooks/stripe", to: "webhooks#stripe"
   
   # Existing routes:
   get "up" => "rails/health#show", as: :rails_health_check

@@ -52,7 +52,7 @@ class CheckoutsController < ApplicationController
       
       # Clear the cart
       session[:cart] = {}
-      redirect_to order_path(@order), notice: "Order placed successfully!"
+      redirect_to new_order_payment_path(@order), notice: "Order placed successfully! Please complete your payment."
     else
       @provinces = Province.all.order(:name)
       render :new

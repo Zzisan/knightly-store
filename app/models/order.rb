@@ -5,7 +5,17 @@ class Order < ApplicationRecord
   has_many :order_items, dependent: :destroy
   has_many :products, through: :order_items
 
-  validates :order_date, :total_amount, :status, presence: true
+  # Order status constants
+  STATUS_PENDING = 'pending'
+  STATUS_PAID = 'paid'
+  STATUS_SHIPPED = 'shipped'
+  STATUS_COMPLETED = 'completed'
+  STATUS_CANCELLED = 'cancelled'
+  
+  STATUSES = [STATUS_PENDING, STATUS_PAID, STATUS_SHIPPED, STATUS_COMPLETED, STATUS_CANCELLED]
+  
+  validates :order_date, :total_amount, presence: true
+  validates :status, presence: true, inclusion: { in: STATUSES }
 
   # -- Ransack Allowlisting --
   # Explicitly list all attributes you want Ransack to search/filter.
