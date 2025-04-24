@@ -69,7 +69,7 @@ group :test do
   gem "selenium-webdriver"
 end
 group :development, :test do
-  gem 'rspec-rails', '~> 5.0.0'
+  gem 'rspec-rails', '~> 7.1.1'
 end
 
 # gem "nokogiri", "~> 1.18" # Removed as part of scraping cleanup
